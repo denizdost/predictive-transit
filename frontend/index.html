@@ -7,266 +7,430 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config={theme:{extend:{colors:{"primary":"#003ec7","primary-container":"#0052ff","on-primary":"#ffffff","secondary":"#a33800","surface":"#f8f9fc","surface-container-lowest":"#ffffff","surface-container-low":"#f2f4f6","surface-container":"#eceef0","surface-container-high":"#e7e8eb","surface-container-highest":"#e1e2e5","on-surface":"#191c1e","on-surface-variant":"#434656","outline":"#737688","outline-variant":"#c3c5d9"},fontFamily:{headline:["Plus Jakarta Sans"],body:["Inter"]}}}}
-</script>
 <style>
 .material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24}
-.fill-icon{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
 .tabular-nums{font-variant-numeric:tabular-nums}
 .live-dot{animation:blink 1.4s ease infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 .bar-fill{transition:width .8s cubic-bezier(.16,1,.3,1)}
+.page{display:none}.page.active{display:block}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;color:#737688;transition:all .2s;cursor:pointer;font-size:14px;font-weight:500}
+.nav-item:hover{background:#f2f4f6;color:#191c1e}
+.nav-item.active{color:#003ec7;font-weight:700;background:#f2f4f6;border-right:4px solid #003ec7}
 </style>
 </head>
-<body class="bg-[#f8f9fc] font-[Inter] text-[#191c1e] antialiased min-h-screen">
-<aside class="fixed left-0 top-0 h-full w-64 flex flex-col z-40 bg-white border-r border-gray-200">
-  <div class="px-6 py-8">
-    <h1 class="text-lg font-extrabold tracking-tight text-[#191c1e] font-[Plus_Jakarta_Sans]">Predictive Transit</h1>
-    <p class="text-xs text-[#737688] mt-1">Precision Pulse - Sivas</p>
+<body style="background:#f8f9fc;font-family:Inter,sans-serif;color:#191c1e;min-height:100vh;">
+<aside style="position:fixed;left:0;top:0;height:100%;width:256px;display:flex;flex-direction:column;z-index:40;background:white;border-right:1px solid #e5e7eb;">
+  <div style="padding:32px 24px 24px">
+    <h1 style="font-size:18px;font-weight:800;color:#191c1e;font-family:Plus Jakarta Sans,sans-serif;">Predictive Transit</h1>
+    <p style="font-size:11px;color:#737688;margin-top:4px;">Precision Pulse - Sivas</p>
   </div>
-  <nav class="flex-1 px-4 space-y-1">
-    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
-      <span class="material-symbols-outlined text-xl">dashboard</span><span class="text-sm font-medium">Dashboard</span>
-    </a>
-    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
-      <span class="material-symbols-outlined text-xl">analytics</span><span class="text-sm font-medium">Route Analytics</span>
-    </a>
-    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#003ec7] font-bold bg-[#f2f4f6] border-r-4 border-[#003ec7]" href="#">
-      <span class="material-symbols-outlined text-xl">directions_bus</span><span class="text-sm">Stop Predictor</span>
-    </a>
-    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
-      <span class="material-symbols-outlined text-xl">settings</span><span class="text-sm font-medium">Settings</span>
-    </a>
+  <nav style="flex:1;padding:0 16px;display:flex;flex-direction:column;gap:4px;">
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="material-symbols-outlined" style="font-size:20px;">dashboard</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('predictor')" id="nav-predictor"><span class="material-symbols-outlined" style="font-size:20px;">directions_bus</span>Stop Predictor</div>
+    <div class="nav-item" onclick="showPage('planner')" id="nav-planner"><span class="material-symbols-outlined" style="font-size:20px;">map</span>Trip Planner</div>
+    <div class="nav-item" onclick="showPage('analytics')" id="nav-analytics"><span class="material-symbols-outlined" style="font-size:20px;">analytics</span>Route Analytics</div>
+    <div class="nav-item" onclick="showPage('settings')" id="nav-settings"><span class="material-symbols-outlined" style="font-size:20px;">settings</span>Settings</div>
   </nav>
-  <div class="p-6">
-    <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#f2f4f6]">
-      <span class="w-2 h-2 rounded-full bg-green-500 live-dot"></span>
-      <span class="text-xs font-bold text-green-600">LIVE PREDICTIONS</span>
+  <div style="padding:24px;">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#f2f4f6;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;" class="live-dot"></span>
+      <span style="font-size:11px;font-weight:700;color:#16a34a;">LIVE PREDICTIONS</span>
     </div>
   </div>
 </aside>
-<header class="fixed top-0 right-0 left-64 h-16 flex items-center justify-between px-6 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-  <span class="text-base font-black tracking-tight text-[#003ec7] font-[Plus_Jakarta_Sans]">Stop Predictor</span>
-  <div class="flex items-center gap-2 text-xs text-[#737688]">
-    <span class="material-symbols-outlined text-base">schedule</span>
-    <span id="clockDisplay" class="tabular-nums font-medium"></span>
+<header style="position:fixed;top:0;right:0;left:256px;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:50;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid #e5e7eb;">
+  <span id="pageTitle" style="font-size:15px;font-weight:900;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;">Dashboard</span>
+  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#737688;">
+    <span class="material-symbols-outlined" style="font-size:16px;">schedule</span>
+    <span id="clockDisplay" class="tabular-nums" style="font-weight:500;"></span>
   </div>
 </header>
-<main class="pl-64 pt-16 min-h-screen bg-[#f8f9fc]">
-  <div class="p-8 max-w-6xl mx-auto">
-    <div class="flex flex-col lg:flex-row gap-8">
-      <section class="lg:w-80 space-y-5 shrink-0">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#737688] mb-5">Predict Your Stop</h2>
-          <div class="space-y-4">
+<main style="padding-left:256px;padding-top:64px;min-height:100vh;">
+
+<div id="page-dashboard" class="page active" style="padding:32px;max-width:1100px;">
+  <h2 style="font-size:22px;font-weight:800;font-family:Plus Jakarta Sans,sans-serif;margin-bottom:6px;">Good morning, Sivas</h2>
+  <p style="font-size:13px;color:#737688;margin-bottom:28px;">Real-time transit overview based on Sivas March 2025 data.</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:12px;">Avg Delay</div><div style="font-size:36px;font-weight:900;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;line-height:1;">8.2<span style="font-size:14px;font-weight:500;color:#737688;margin-left:4px;">min</span></div><div style="font-size:11px;color:#a33800;margin-top:8px;">Above normal</div></div>
+    <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:12px;">Avg Crowd</div><div style="font-size:36px;font-weight:900;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;line-height:1;">34<span style="font-size:14px;font-weight:500;color:#737688;margin-left:4px;">ppl</span></div><div style="font-size:11px;color:#16a34a;margin-top:8px;">Normal levels</div></div>
+    <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:12px;">On-Time Rate</div><div style="font-size:36px;font-weight:900;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;line-height:1;">33.8<span style="font-size:14px;font-weight:500;color:#737688;margin-left:4px;">%</span></div><div style="font-size:11px;color:#a33800;margin-top:8px;">Below target 70%</div></div>
+    <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:12px;">Active Lines</div><div style="font-size:36px;font-weight:900;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;line-height:1;">5<span style="font-size:14px;font-weight:500;color:#737688;margin-left:4px;">lines</span></div><div style="font-size:11px;color:#16a34a;margin-top:8px;">All operational</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:20px;">Avg Delay by Line (min)</div><div id="delayChart" style="display:flex;align-items:flex-end;gap:12px;height:120px;"></div><div id="delayLabels" style="display:flex;gap:12px;margin-top:8px;"></div></div>
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:20px;">Delay by Weather (min)</div><div id="weatherChart" style="display:flex;flex-direction:column;gap:10px;"></div></div>
+  </div>
+  <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:20px;">Avg Crowd by Hour</div><div id="crowdChart" style="display:flex;align-items:flex-end;gap:4px;height:100px;"></div><div id="crowdLabels" style="display:flex;gap:4px;margin-top:6px;"></div></div>
+</div>
+
+<div id="page-predictor" class="page" style="padding:32px;max-width:1100px;">
+  <h2 style="font-size:22px;font-weight:800;font-family:Plus Jakarta Sans,sans-serif;margin-bottom:6px;">Stop Predictor</h2>
+  <p style="font-size:13px;color:#737688;margin-bottom:28px;">Select your line and conditions. Current time is used automatically — no manual inputs needed.</p>
+  <div style="display:flex;gap:24px;">
+    <div style="width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:16px;">
+      <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:#737688;margin-bottom:20px;">Your Stop</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Bus Line</label>
+          <select id="p_line" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="">- Select Line -</option>
+            <option value="L01">L01 - Merkez - Universitesi</option>
+            <option value="L02">L02 - Sanayi - Hastane</option>
+            <option value="L03">L03 - Baglar - Carsi</option>
+            <option value="L04">L04 - Esentepe - Meydan</option>
+            <option value="L05">L05 - Terminal - Kampus</option>
+          </select></div>
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Weather Now</label>
+          <select id="p_weather" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="clear">Clear</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="fog">Fog</option><option value="wind">Wind</option>
+          </select></div>
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Traffic Now</label>
+          <select id="p_traffic" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="low">Low</option><option value="moderate" selected>Moderate</option><option value="high">High</option><option value="congested">Congested</option>
+          </select></div>
+        </div>
+        <button onclick="runPredictor()" style="margin-top:16px;width:100%;padding:13px;border-radius:10px;background:#003ec7;color:white;font-weight:700;font-size:14px;border:none;cursor:pointer;">Predict Now</button>
+        <div id="p_error" style="display:none;margin-top:12px;padding:12px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:12px;"></div>
+      </div>
+      <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:12px;">Auto-Detected</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Time</span><span id="ctx_time" style="font-size:12px;font-weight:700;color:#003ec7;" class="tabular-nums">--</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Period</span><span id="ctx_bucket" style="font-size:12px;font-weight:700;color:#003ec7;">--</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Day Type</span><span id="ctx_day" style="font-size:12px;font-weight:700;color:#003ec7;">--</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;">
+      <div id="p_empty" style="background:white;border-radius:16px;padding:60px;border:1px solid #e5e7eb;text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:48px;color:#d1d5db;">directions_bus</span>
+        <p style="font-size:14px;font-weight:600;color:#434656;margin-top:12px;">Select a line and click Predict</p>
+        <p style="font-size:12px;color:#737688;margin-top:4px;">Uses real data from Sivas March 2025</p>
+      </div>
+      <div id="p_result" style="display:none;flex-direction:column;gap:16px;">
+        <div style="background:white;border-radius:16px;padding:28px;border:1px solid #e5e7eb;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+            <div><div id="r_line" style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:#737688;">--</div><div id="r_bucket" style="font-size:12px;color:#434656;margin-top:4px;">--</div></div>
+            <div id="r_badge" style="font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;">--</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
             <div>
-              <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Bus Line</label>
-              <select id="lineSelect" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-1 focus:ring-[#003ec7]">
-                <option value="">- Select Line -</option>
-                <option value="L01">L01 - Merkez</option>
-                <option value="L02">L02 - Line 2</option>
-                <option value="L03">L03 - Line 3</option>
-                <option value="L04">L04 - Line 4</option>
-                <option value="L05">L05 - Line 5</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Stop Type</label>
-              <select id="stopType" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-1 focus:ring-[#003ec7]">
-                <option value="regular">Regular</option>
-                <option value="terminal">Terminal</option>
-                <option value="university">University</option>
-                <option value="hospital">Hospital</option>
-                <option value="market">Market</option>
-                <option value="residential">Residential</option>
-              </select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Weather</label>
-                <select id="weather" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium">
-                  <option value="clear">Clear</option>
-                  <option value="cloudy">Cloudy</option>
-                  <option value="rain">Rain</option>
-                  <option value="snow">Snow</option>
-                  <option value="fog">Fog</option>
-                  <option value="wind">Wind</option>
-                </select>
-              </div>
-              <div>
-                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Traffic</label>
-                <select id="traffic" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium">
-                  <option value="low">Low</option>
-                  <option value="moderate" selected>Moderate</option>
-                  <option value="high">High</option>
-                  <option value="congested">Congested</option>
-                </select>
+              <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:8px;">Expected Delay</div>
+              <div style="display:flex;align-items:flex-end;gap:8px;">
+                <span id="r_delay" style="font-size:72px;font-weight:900;line-height:1;color:#003ec7;font-family:Plus Jakarta Sans,sans-serif;" class="tabular-nums">--</span>
+                <span style="font-size:16px;color:#737688;padding-bottom:10px;">min late</span>
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Delay (min)</label>
-                <input type="number" id="cumDelay" value="2" min="0" max="60" step="0.5" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium"/>
-              </div>
-              <div>
-                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Speed x</label>
-                <input type="number" id="speedFactor" value="0.85" min="0" max="1" step="0.05" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium"/>
-              </div>
-            </div>
-          </div>
-          <button onclick="predict()" id="predictBtn" class="mt-5 w-full py-3 rounded-lg bg-[#003ec7] text-white font-bold text-sm tracking-wide hover:bg-[#0052ff] active:scale-[0.98] transition-all disabled:opacity-50">
-            <span id="btnText">Predict Arrival and Crowd</span>
-          </button>
-          <div id="errorBox" class="hidden mt-3 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium"></div>
-        </div>
-        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <h3 class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-3">Model Performance</h3>
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-[#434656]">Arrival Model</span>
-              <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded uppercase">MAE 0.01 min</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-[#434656]">Crowd Model</span>
-              <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded uppercase">RMSE 7.27</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-[#434656]">Dataset</span>
-              <span class="text-[10px] font-bold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded uppercase">Sivas Mar 2025</span>
+            <div style="text-align:right;">
+              <div style="margin-bottom:12px;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;">On-Time Rate</div><div id="r_ontime" style="font-size:24px;font-weight:900;color:#191c1e;font-family:Plus Jakarta Sans,sans-serif;" class="tabular-nums">--%</div></div>
+              <div><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;">Weather Impact</div><div id="r_weather_impact" style="font-size:13px;font-weight:700;">--</div></div>
             </div>
           </div>
         </div>
-      </section>
-      <section class="flex-1 space-y-5">
-        <div id="emptyState" class="bg-white rounded-xl p-12 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-64">
-          <span class="material-symbols-outlined text-5xl text-gray-300 mb-4">directions_bus</span>
-          <p class="text-sm font-bold text-[#434656]">Select a bus line and click Predict</p>
-          <p class="text-xs text-[#737688] mt-1">Real-time arrival and crowd forecast will appear here</p>
-        </div>
-        <div id="resultSection" class="hidden space-y-5">
-          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div class="flex items-start justify-between mb-6">
-              <div>
-                <div id="cardLine" class="text-[10px] font-black uppercase tracking-[0.2em] text-[#737688] mb-1">-</div>
-                <div id="cardBucket" class="text-xs text-[#434656] font-medium">-</div>
-              </div>
-              <div id="statusBadge" class="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-</div>
-            </div>
-            <div class="flex items-end justify-between">
-              <div>
-                <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-2">Arrives in</div>
-                <div class="flex items-end gap-2">
-                  <span id="arrivalMins" class="text-7xl font-black tabular-nums tracking-tighter text-[#003ec7] font-[Plus_Jakarta_Sans]">-</span>
-                  <span class="text-lg font-medium text-[#737688] pb-3">min</span>
-                </div>
-              </div>
-              <div class="text-right space-y-3">
-                <div>
-                  <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-1">Reliability</div>
-                  <div class="flex items-center gap-1 justify-end">
-                    <span id="reliabilityPct" class="text-2xl font-black tabular-nums text-[#191c1e] font-[Plus_Jakarta_Sans]">-</span>
-                    <span id="reliabilityIcon" class="material-symbols-outlined fill-icon text-xl text-green-500">verified</span>
-                  </div>
-                </div>
-                <div>
-                  <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-1">Delay</div>
-                  <div id="delayValue" class="text-sm font-bold">-</div>
-                </div>
-              </div>
-            </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;">
+            <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">Stop Occupancy</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><span id="r_emoji" style="font-size:28px;">--</span><div><div id="r_crowd_label" style="font-size:18px;font-weight:900;font-family:Plus Jakarta Sans,sans-serif;">--</div><div id="r_crowd_count" style="font-size:12px;color:#737688;">-- people waiting</div></div></div>
+            <div style="height:8px;background:#e7e8eb;border-radius:999px;overflow:hidden;"><div id="r_crowd_bar" class="bar-fill" style="height:100%;width:0%;border-radius:999px;"></div></div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div class="flex items-center justify-between mb-4">
-                <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688]">Stop Occupancy</h4>
-                <span id="crowdBadge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase">-</span>
-              </div>
-              <div class="flex items-end gap-2 mb-3">
-                <span id="crowdEmoji" class="text-2xl">-</span>
-                <span id="crowdName" class="text-xl font-black font-[Plus_Jakarta_Sans]">-</span>
-              </div>
-              <div class="h-2 w-full bg-[#e7e8eb] rounded-full overflow-hidden mb-2">
-                <div id="crowdBar" class="h-full rounded-full bar-fill" style="width:0%"></div>
-              </div>
-              <p id="crowdCount" class="text-[10px] text-[#737688] mt-2">- people waiting</p>
+          <div style="background:white;border-radius:16px;padding:20px;border:1px solid #e5e7eb;">
+            <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">Historical Context</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Typical delay this hour</span><span id="r_hist_delay" style="font-size:12px;font-weight:700;">-- min</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Typical crowd this hour</span><span id="r_hist_crowd" style="font-size:12px;font-weight:700;">-- ppl</span></div>
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Data source</span><span style="font-size:12px;font-weight:700;color:#003ec7;">Sivas Mar 2025</span></div>
             </div>
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div class="flex items-center justify-between mb-4">
-                <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688]">Route Reliability</h4>
-                <span id="routeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-[#eceef0] text-[#737688]">-</span>
-              </div>
-              <div class="flex items-end gap-1 h-10 mb-3" id="pulseBars"></div>
-              <p id="pulseNote" class="text-[10px] text-[#737688]">Based on current conditions</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-4">Conditions</h4>
-            <div id="conditionsRow" class="flex flex-wrap gap-2"></div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   </div>
+</div>
+
+<div id="page-planner" class="page" style="padding:32px;max-width:1100px;">
+  <h2 style="font-size:22px;font-weight:800;font-family:Plus Jakarta Sans,sans-serif;margin-bottom:6px;">Trip Planner</h2>
+  <p style="font-size:13px;color:#737688;margin-bottom:28px;">See every stop on a line with predicted delay and crowd level.</p>
+  <div style="display:flex;gap:24px;">
+    <div style="width:300px;flex-shrink:0;">
+      <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:#737688;margin-bottom:20px;">Plan Journey</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Bus Line</label>
+          <select id="tp_line" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="">- Select Line -</option>
+            <option value="L01">L01 - Merkez - Universitesi</option>
+            <option value="L02">L02 - Sanayi - Hastane</option>
+            <option value="L03">L03 - Baglar - Carsi</option>
+            <option value="L04">L04 - Esentepe - Meydan</option>
+            <option value="L05">L05 - Terminal - Kampus</option>
+          </select></div>
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Weather</label>
+          <select id="tp_weather" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="clear">Clear</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="fog">Fog</option><option value="wind">Wind</option>
+          </select></div>
+          <div><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737688;display:block;margin-bottom:6px;">Traffic</label>
+          <select id="tp_traffic" style="width:100%;background:#e1e2e5;border:none;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500;color:#191c1e;">
+            <option value="low">Low</option><option value="moderate" selected>Moderate</option><option value="high">High</option><option value="congested">Congested</option>
+          </select></div>
+        </div>
+        <button onclick="planTrip()" style="margin-top:16px;width:100%;padding:13px;border-radius:10px;background:#003ec7;color:white;font-weight:700;font-size:14px;border:none;cursor:pointer;">Show All Stops</button>
+      </div>
+    </div>
+    <div style="flex:1;">
+      <div id="tp_empty" style="background:white;border-radius:16px;padding:60px;border:1px solid #e5e7eb;text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:48px;color:#d1d5db;">route</span>
+        <p style="font-size:14px;font-weight:600;color:#434656;margin-top:12px;">Select a line to see the full route</p>
+        <p style="font-size:12px;color:#737688;margin-top:4px;">Each stop shows predicted delay and crowd level</p>
+      </div>
+      <div id="tp_result" style="display:none;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-analytics" class="page" style="padding:32px;max-width:1100px;">
+  <h2 style="font-size:22px;font-weight:800;font-family:Plus Jakarta Sans,sans-serif;margin-bottom:6px;">Route Analytics</h2>
+  <p style="font-size:13px;color:#737688;margin-bottom:28px;">Line performance from real Sivas March 2025 data.</p>
+  <div style="display:flex;gap:8px;margin-bottom:24px;">
+    <button onclick="setAnalyticsLine('ALL')" id="ab-ALL" style="padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:#003ec7;color:white;">All Lines</button>
+    <button onclick="setAnalyticsLine('L01')" id="ab-L01" style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:700;background:white;color:#737688;">L01</button>
+    <button onclick="setAnalyticsLine('L02')" id="ab-L02" style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:700;background:white;color:#737688;">L02</button>
+    <button onclick="setAnalyticsLine('L03')" id="ab-L03" style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:700;background:white;color:#737688;">L03</button>
+    <button onclick="setAnalyticsLine('L04')" id="ab-L04" style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:700;background:white;color:#737688;">L04</button>
+    <button onclick="setAnalyticsLine('L05')" id="ab-L05" style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;font-weight:700;background:white;color:#737688;">L05</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">Delay by Hour</div><div id="a_delay_chart" style="display:flex;align-items:flex-end;gap:3px;height:100px;"></div><div id="a_delay_labels" style="display:flex;gap:3px;margin-top:6px;"></div></div>
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">Crowd by Hour</div><div id="a_crowd_chart" style="display:flex;align-items:flex-end;gap:3px;height:100px;"></div><div id="a_crowd_labels" style="display:flex;gap:3px;margin-top:6px;"></div></div>
+  </div>
+  <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">Line Performance</div><div id="a_lines_table" style="display:flex;flex-direction:column;gap:12px;"></div></div>
+</div>
+
+<div id="page-settings" class="page" style="padding:32px;max-width:700px;">
+  <h2 style="font-size:22px;font-weight:800;font-family:Plus Jakarta Sans,sans-serif;margin-bottom:6px;">Settings</h2>
+  <p style="font-size:13px;color:#737688;margin-bottom:28px;">Configure your Predictive Transit experience.</p>
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;">
+      <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">API Configuration</div>
+      <label style="font-size:12px;font-weight:600;color:#434656;display:block;margin-bottom:6px;">API Base URL</label>
+      <input id="s_api" value="http://localhost:8000" style="width:100%;background:#f2f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:13px;color:#191c1e;"/>
+      <p style="font-size:11px;color:#737688;margin-top:6px;">Change to your VM IP when deployed, e.g. http://192.168.1.10:8000</p>
+      <button onclick="saveSettings()" style="margin-top:12px;padding:10px 20px;border-radius:8px;background:#003ec7;color:white;font-weight:700;font-size:13px;border:none;cursor:pointer;">Save</button>
+      <span id="s_saved" style="display:none;font-size:12px;color:#16a34a;margin-left:10px;">Saved!</span>
+    </div>
+    <div style="background:white;border-radius:16px;padding:24px;border:1px solid #e5e7eb;">
+      <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#737688;margin-bottom:16px;">About</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Project</span><span style="font-size:12px;font-weight:700;">Predictive Transit</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Hackathon</span><span style="font-size:12px;font-weight:700;">Anadolu 2026 - Case 2</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">City</span><span style="font-size:12px;font-weight:700;">Sivas, Turkey</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Dataset</span><span style="font-size:12px;font-weight:700;">March 2025 - 4478 observations</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Arrival MAE</span><span style="font-size:12px;font-weight:700;color:#16a34a;">0.01 min</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">Crowd RMSE</span><span style="font-size:12px;font-weight:700;color:#16a34a;">7.27 people</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#434656;">GitHub</span><span style="font-size:12px;font-weight:700;color:#003ec7;">github.com/denizdost/predictive-transit</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 <script>
-const API_BASE="http://localhost:8000";
-function updateClock(){const n=new Date();document.getElementById("clockDisplay").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}
-setInterval(updateClock,1000);updateClock();
-function timeBucket(h){if(h>=5&&h<7)return"early_morning";if(h>=7&&h<9)return"morning_rush";if(h>=9&&h<12)return"midday";if(h>=12&&h<13)return"lunch";if(h>=13&&h<16)return"afternoon";if(h>=16&&h<19)return"evening_rush";return"evening";}
+const API_BASE_DEFAULT="http://localhost:8000";
+let API_BASE=API_BASE_DEFAULT;
+const DATA={
+  delayByLine:{L01:8.5,L02:5.9,L03:8.0,L04:7.2,L05:9.1},
+  ontimeByLine:{L01:30.0,L02:35.8,L03:30.7,L04:32.4,L05:36.9},
+  lineNames:{L01:"Merkez - Universitesi",L02:"Sanayi - Hastane",L03:"Baglar - Carsi",L04:"Esentepe - Meydan",L05:"Terminal - Kampus"},
+  delayByWeather:{clear:5.5,cloudy:5.9,fog:12.5,rain:10.2,snow:16.6,wind:8.9},
+  crowdByHour:{5:28.8,6:28.3,7:67.1,8:54.1,9:29.5,10:25.9,11:22.4,12:35.2,13:35.6,14:28.6,15:26.2,16:25.4,17:45.9,18:64.1,19:24.5,20:25.0,21:26.6,22:28.3},
+  delayByHour:{5:9.0,6:7.8,7:13.6,8:8.5,9:13.8,10:6.6,11:5.2,12:5.6,13:5.5,14:11.3,15:4.4,16:6.7,17:9.0,18:15.5,19:10.2,20:5.9,21:6.1,22:6.4},
+  delayLineHour:{L01:{5:4.2,6:8.5,7:10.4,8:15.0,9:8.6,10:3.8,11:8.7,12:3.7,13:7.8,14:21.7,15:5.6,16:5.5,17:5.2,18:4.5,19:11.6,20:7.7,21:10.2,22:7.2},L02:{5:3.1,6:5.2,7:8.9,8:6.3,9:5.1,10:4.2,11:3.8,12:4.1,13:5.3,14:9.2,15:4.1,16:5.8,17:7.2,18:12.1,19:8.4,20:4.2,21:5.1,22:5.5},L03:{5:6.2,6:7.1,7:12.3,8:9.4,9:11.2,10:5.9,11:4.8,12:5.1,13:6.2,14:13.1,15:3.9,16:6.2,17:8.9,18:14.2,19:9.8,20:5.4,21:6.8,22:6.1},L04:{5:5.1,6:6.8,7:9.8,8:7.2,9:9.1,10:5.2,11:4.1,12:4.8,13:5.9,14:11.4,15:4.2,16:5.9,17:7.8,18:13.1,19:8.9,20:5.1,21:5.9,22:5.8},L05:{5:7.1,6:9.2,7:14.1,8:11.3,9:12.4,10:6.8,11:5.9,12:5.9,13:7.1,14:15.2,15:5.8,16:7.1,17:9.8,18:16.4,19:11.2,20:6.8,21:7.4,22:7.9}},
+  crowdLineHour:{L01:{5:19,6:18,7:38,8:52,9:22,10:19,11:16,12:25,13:33,14:27,15:16,16:17,17:36,18:39,19:18,20:18,21:24,22:20},L02:{5:22,6:24,7:58,8:48,9:26,10:22,11:20,12:31,13:34,14:25,15:22,16:23,17:42,18:61,19:22,20:22,21:25,22:24},L03:{5:18,6:17,7:45,8:38,9:21,10:18,11:15,12:28,13:32,14:22,15:18,16:19,17:38,18:55,19:21,20:19,21:22,22:19},L04:{5:21,6:23,7:52,8:44,9:24,10:21,11:18,12:29,13:33,14:24,15:20,16:21,17:40,18:58,19:21,20:21,21:24,22:22},L05:{5:25,6:27,7:72,8:62,9:31,10:26,11:23,12:38,13:40,14:31,15:25,16:27,17:52,18:74,19:27,20:26,21:29,22:27}},
+  stopsByLine:{L01:["Terminal","Regular","Regular","University","Regular","Hospital","Regular","Regular","Market","Regular","Regular","Regular","Regular","Terminal"],L02:["Terminal","Market","Residential","Regular","Regular","Hospital","Regular","Market","Regular","Regular","Terminal","Regular","Regular","Regular"],L03:["Terminal","Market","Hospital","Regular","University","Regular","Regular","Market","Regular","Regular","Terminal","Regular","Regular","Regular"],L04:["Terminal","Residential","Regular","Market","Regular","Regular","Hospital","Regular","Regular","University","Regular","Regular","Terminal","Regular"],L05:["Terminal","Regular","University","Regular","Regular","Market","Regular","Hospital","Regular","Regular","Regular","Regular","Regular","Terminal"]}
+};
+function timeBucket(h){if(h>=5&&h<7)return"Early Morning";if(h>=7&&h<9)return"Morning Rush";if(h>=9&&h<12)return"Midday";if(h>=12&&h<13)return"Lunch";if(h>=13&&h<16)return"Afternoon";if(h>=16&&h<19)return"Evening Rush";return"Evening";}
+function timeBucketKey(h){if(h>=5&&h<7)return"early_morning";if(h>=7&&h<9)return"morning_rush";if(h>=9&&h<12)return"midday";if(h>=12&&h<13)return"lunch";if(h>=13&&h<16)return"afternoon";if(h>=16&&h<19)return"evening_rush";return"evening";}
 function crowdColor(l){return{Empty:"#22c55e",Light:"#84cc16",Moderate:"#eab308",Busy:"#f97316",Crowded:"#ef4444"}[l]||"#003ec7";}
-function reliabilityPct(d){return Math.max(10,Math.round(100-d*3));}
-function pulseBars(r){let h="";for(let i=0;i<8;i++){const ht=30+Math.random()*70;const op=i<Math.round((r/100)*8)?"1":"0.15";const c=r>=80?"#003ec7":r>=50?"#eab308":"#a33800";h+=`<div class="flex-1 rounded-sm" style="height:${ht}%;background:${c};opacity:${op}"></div>`;}return h;}
-async function predict(){
-  const btn=document.getElementById("predictBtn"),btnText=document.getElementById("btnText"),errorBox=document.getElementById("errorBox"),emptyState=document.getElementById("emptyState"),resultSection=document.getElementById("resultSection");
-  errorBox.classList.add("hidden");
-  const lineId=document.getElementById("lineSelect").value;
-  if(!lineId){errorBox.textContent="Please select a bus line.";errorBox.classList.remove("hidden");return;}
-  const now=new Date(),hour=now.getHours(),dow=now.getDay()===0?6:now.getDay()-1,isWeekend=(now.getDay()===0||now.getDay()===6)?1:0,bucket=timeBucket(hour);
-  const weather=document.getElementById("weather").value,traffic=document.getElementById("traffic").value,stopType=document.getElementById("stopType").value;
-  const cumDelay=parseFloat(document.getElementById("cumDelay").value)||0,speed=parseFloat(document.getElementById("speedFactor").value)||0.85;
-  btn.disabled=true;btnText.textContent="Predicting...";
-  try{
-    const body={line_id:lineId,stop_sequence:3,stop_type:stopType,hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumDelay,speed_factor:speed,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:bucket,dwell_time_min:1.0};
-    const[arrRes,crowdRes]=await Promise.all([fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})]);
-    if(!arrRes.ok||!crowdRes.ok)throw new Error("API error");
-    const arr=await arrRes.json(),crowd=await crowdRes.json();
-    const delay=Math.max(0,arr.predicted_delay_min),passengers=Math.max(0,crowd.predicted_passengers),rel=reliabilityPct(delay),crowdPct=Math.min(100,Math.round((passengers/100)*100));
-    document.getElementById("cardLine").textContent=lineId+" - "+stopType.toUpperCase()+" STOP";
-    document.getElementById("cardBucket").textContent=bucket.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-    document.getElementById("arrivalMins").textContent=delay<=0?"0":delay.toFixed(0);
-    const badge=document.getElementById("statusBadge");
-    if(arr.is_delayed){badge.textContent="! "+arr.status;badge.className="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide bg-red-50 text-red-700 border border-red-200";}
-    else{badge.textContent="On Time";badge.className="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide bg-green-50 text-green-700 border border-green-200";}
-    document.getElementById("reliabilityPct").textContent=rel+"%";
-    const ri=document.getElementById("reliabilityIcon");
-    if(rel>=80){ri.textContent="verified";ri.className="material-symbols-outlined fill-icon text-xl text-green-500";}
-    else if(rel>=50){ri.textContent="warning";ri.className="material-symbols-outlined fill-icon text-xl text-amber-500";}
-    else{ri.textContent="error";ri.className="material-symbols-outlined fill-icon text-xl text-red-500";}
-    document.getElementById("delayValue").textContent=delay<=0?"No delay":"+"+delay.toFixed(1)+" min";
-    const color=crowdColor(crowd.crowding_level);
-    document.getElementById("crowdEmoji").textContent=crowd.crowding_emoji;
-    document.getElementById("crowdName").textContent=crowd.crowding_level;
-    document.getElementById("crowdCount").textContent="~"+passengers+" people waiting at stop";
-    const cb=document.getElementById("crowdBar");
-    cb.style.background="linear-gradient(to right,"+color+"aa,"+color+")";
-    setTimeout(()=>{cb.style.width=crowdPct+"%";},50);
-    const cbadge=document.getElementById("crowdBadge");
-    cbadge.textContent=crowd.crowding_level;cbadge.style.cssText="background:"+color+"18;color:"+color+";border:1px solid "+color+"40;";
-    document.getElementById("pulseBars").innerHTML=pulseBars(rel);
-    document.getElementById("routeBadge").textContent=rel>=80?"Stable":rel>=50?"Variable":"Unreliable";
-    document.getElementById("pulseNote").textContent=rel>=80?"Trending well - "+rel+"% reliability":"Some delays expected - "+rel+"% reliability";
-    const icons={clear:"wb_sunny",cloudy:"cloud",rain:"rainy",snow:"ac_unit",fog:"foggy",wind:"air"};
-    const tc={low:"color:green",moderate:"color:#d97706",high:"color:#ea580c",congested:"color:#dc2626"};
-    document.getElementById("conditionsRow").innerHTML=
-      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#003ec7]'>"+(icons[weather]||"cloud")+"</span><span class='text-xs font-medium capitalize'>"+weather+"</span></div>"+
-      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm' style='"+tc[traffic]+"'>traffic</span><span class='text-xs font-medium capitalize'>"+traffic+" traffic</span></div>"+
-      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#737688]'>schedule</span><span class='text-xs font-medium capitalize'>"+bucket.replace(/_/g," ")+"</span></div>"+
-      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#737688]'>speed</span><span class='text-xs font-medium'>Speed x"+speed+"</span></div>";
-    emptyState.classList.add("hidden");resultSection.classList.remove("hidden");
-  }catch(err){errorBox.textContent="Could not reach the API at "+API_BASE;errorBox.classList.remove("hidden");}
-  finally{btn.disabled=false;btnText.textContent="Predict Arrival and Crowd";}
+function crowdLabel(p){if(p<=10)return{label:"Empty",emoji:"🟢"};if(p<=25)return{label:"Light",emoji:"🟡"};if(p<=45)return{label:"Moderate",emoji:"🟠"};if(p<=70)return{label:"Busy",emoji:"🔴"};return{label:"Crowded",emoji:"🔴"};}
+function showPage(name){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+name).classList.add("active");
+  document.getElementById("nav-"+name).classList.add("active");
+  const titles={dashboard:"Dashboard",predictor:"Stop Predictor",planner:"Trip Planner",analytics:"Route Analytics",settings:"Settings"};
+  document.getElementById("pageTitle").textContent=titles[name];
+  if(name==="dashboard")renderDashboard();
+  if(name==="analytics")renderAnalytics("ALL");
 }
+function updateClock(){
+  const n=new Date();
+  document.getElementById("clockDisplay").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const h=n.getHours();
+  const ct=document.getElementById("ctx_time");
+  const cb=document.getElementById("ctx_bucket");
+  const cd=document.getElementById("ctx_day");
+  if(ct)ct.textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+  if(cb)cb.textContent=timeBucket(h);
+  if(cd)cd.textContent=(n.getDay()===0||n.getDay()===6)?"Weekend":"Weekday";
+}
+setInterval(updateClock,1000);updateClock();
+function renderDashboard(){
+  const lines=["L01","L02","L03","L04","L05"];
+  const delays=lines.map(l=>DATA.delayByLine[l]);
+  const maxD=Math.max(...delays);
+  let bars="",labels="";
+  lines.forEach((l,i)=>{
+    const h=Math.round((delays[i]/maxD)*100);
+    bars+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:10px;font-weight:700;color:#003ec7;">${delays[i]}m</span><div style="width:100%;height:${h}px;background:linear-gradient(to top,#003ec7,#0052ff);border-radius:4px 4px 0 0;"></div></div>`;
+    labels+=`<div style="flex:1;text-align:center;font-size:10px;font-weight:700;color:#737688;">${l}</div>`;
+  });
+  document.getElementById("delayChart").innerHTML=bars;
+  document.getElementById("delayLabels").innerHTML=labels;
+  const weathers={snow:16.6,fog:12.5,rain:10.2,wind:8.9,cloudy:5.9,clear:5.5};
+  const icons={snow:"❄️",fog:"🌫️",rain:"🌧️",wind:"💨",cloudy:"⛅",clear:"☀️"};
+  let wbars="";
+  Object.entries(weathers).forEach(([w,v])=>{
+    const pct=Math.round((v/20)*100);
+    const color=v>10?"#a33800":v>7?"#d97706":"#16a34a";
+    wbars+=`<div style="display:flex;align-items:center;gap:10px;"><span style="width:20px;">${icons[w]}</span><div style="flex:1;height:8px;background:#f2f4f6;border-radius:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${color};border-radius:4px;"></div></div><span style="font-size:11px;font-weight:700;width:40px;text-align:right;">${v}m</span></div>`;
+  });
+  document.getElementById("weatherChart").innerHTML=wbars;
+  const hours=Object.keys(DATA.crowdByHour).map(Number);
+  const crowds=hours.map(h=>DATA.crowdByHour[h]);
+  const maxC=Math.max(...crowds);
+  const now=new Date().getHours();
+  let cbars="",clabels="";
+  hours.forEach((h,i)=>{
+    const ht=Math.round((crowds[i]/maxC)*100);
+    const isNow=h===now;
+    const color=isNow?"#003ec7":crowds[i]>50?"#f97316":"#b7c4ff";
+    cbars+=`<div style="flex:1;height:${ht}px;background:${color};border-radius:3px 3px 0 0;"></div>`;
+    clabels+=`<div style="flex:1;text-align:center;font-size:9px;color:${isNow?"#003ec7":"#737688"};font-weight:${isNow?900:400};">${h}</div>`;
+  });
+  document.getElementById("crowdChart").innerHTML=cbars;
+  document.getElementById("crowdLabels").innerHTML=clabels;
+}
+async function runPredictor(){
+  const lineId=document.getElementById("p_line").value;
+  const weather=document.getElementById("p_weather").value;
+  const traffic=document.getElementById("p_traffic").value;
+  const errBox=document.getElementById("p_error");
+  errBox.style.display="none";
+  if(!lineId){errBox.textContent="Please select a bus line.";errBox.style.display="block";return;}
+  const now=new Date(),hour=now.getHours(),dow=now.getDay()===0?6:now.getDay()-1,isWeekend=(now.getDay()===0||now.getDay()===6)?1:0;
+  const bucket=timeBucketKey(hour);
+  const histDelay=DATA.delayLineHour[lineId]?.[hour]??DATA.delayByLine[lineId]??8;
+  const histCrowd=DATA.crowdLineHour[lineId]?.[hour]??DATA.crowdByHour[hour]??30;
+  const weatherImpact=DATA.delayByWeather[weather]??6;
+  const speedFactor={low:0.95,moderate:0.85,high:0.7,congested:0.5}[traffic]??0.85;
+  const cumDelay=histDelay*0.5;
+  try{
+    const body={line_id:lineId,stop_sequence:3,stop_type:"regular",hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumDelay,speed_factor:speedFactor,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:bucket,dwell_time_min:1.0};
+    const[arrRes,crowdRes]=await Promise.all([fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})]);
+    if(!arrRes.ok||!crowdRes.ok)throw new Error("err");
+    const arr=await arrRes.json(),crowd=await crowdRes.json();
+    const delay=Math.max(0,arr.predicted_delay_min),passengers=Math.max(0,crowd.predicted_passengers);
+    const cl=crowdLabel(passengers),color=crowdColor(cl.label);
+    document.getElementById("r_line").textContent=lineId+" - "+DATA.lineNames[lineId];
+    document.getElementById("r_bucket").textContent=timeBucket(hour)+" - "+now.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+    document.getElementById("r_delay").textContent=delay.toFixed(0);
+    document.getElementById("r_ontime").textContent=DATA.ontimeByLine[lineId]+"%";
+    document.getElementById("r_hist_delay").textContent=histDelay+"min";
+    document.getElementById("r_hist_crowd").textContent=Math.round(histCrowd)+" ppl";
+    document.getElementById("r_weather_impact").textContent="+"+weatherImpact+"min ("+weather+")";
+    document.getElementById("r_weather_impact").style.color=weatherImpact>10?"#a33800":weatherImpact>6?"#d97706":"#16a34a";
+    document.getElementById("r_emoji").textContent=cl.emoji;
+    document.getElementById("r_crowd_label").textContent=cl.label;
+    document.getElementById("r_crowd_label").style.color=color;
+    document.getElementById("r_crowd_count").textContent="~"+passengers+" people waiting";
+    const cb=document.getElementById("r_crowd_bar");
+    cb.style.background="linear-gradient(to right,"+color+"88,"+color+")";
+    setTimeout(()=>{cb.style.width=Math.min(100,Math.round((passengers/100)*100))+"%";},50);
+    const badge=document.getElementById("r_badge");
+    if(arr.is_delayed){badge.textContent="! "+arr.status;badge.style.cssText="font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;";}
+    else{badge.textContent="On Time";badge.style.cssText="font-size:11px;font-weight:700;padding:4px 14px;border-radius:999px;text-transform:uppercase;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;";}
+    document.getElementById("p_empty").style.display="none";
+    document.getElementById("p_result").style.display="flex";
+  }catch(e){errBox.textContent="API not reachable. Make sure the backend is running.";errBox.style.display="block";}
+}
+async function planTrip(){
+  const lineId=document.getElementById("tp_line").value;
+  const weather=document.getElementById("tp_weather").value;
+  const traffic=document.getElementById("tp_traffic").value;
+  if(!lineId){alert("Please select a bus line.");return;}
+  const stops=DATA.stopsByLine[lineId]||[];
+  const now=new Date(),hour=now.getHours(),dow=now.getDay()===0?6:now.getDay()-1,isWeekend=(now.getDay()===0||now.getDay()===6)?1:0;
+  const bucket=timeBucketKey(hour);
+  const speedFactor={low:0.95,moderate:0.85,high:0.7,congested:0.5}[traffic]??0.85;
+  let html="",cumulativeDelay=0;
+  document.getElementById("tp_result").innerHTML="<div style='padding:20px;color:#737688;font-size:13px;'>Loading stops...</div>";
+  document.getElementById("tp_empty").style.display="none";
+  document.getElementById("tp_result").style.display="flex";
+  for(let i=0;i<stops.length;i++){
+    try{
+      const body={line_id:lineId,stop_sequence:i+1,stop_type:"regular",hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumulativeDelay,speed_factor:speedFactor,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:bucket,dwell_time_min:1.0};
+      const[arrRes,crowdRes]=await Promise.all([fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})]);
+      const arr=await arrRes.json(),crowd=await crowdRes.json();
+      const delay=Math.max(0,arr.predicted_delay_min),passengers=Math.max(0,crowd.predicted_passengers);
+      const cl=crowdLabel(passengers),color=crowdColor(cl.label);
+      const isFirst=i===0,isLast=i===stops.length-1;
+      cumulativeDelay+=delay*0.2;
+      html+=`<div style="background:white;border-radius:12px;padding:16px 20px;border:1px solid #e5e7eb;display:flex;align-items:center;gap:16px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:${isFirst||isLast?"#003ec7":"#f2f4f6"};color:${isFirst||isLast?"white":"#737688"};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;">${i+1}</div>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${stops[i]}</div><div style="font-size:11px;color:#737688;margin-top:2px;">${DATA.lineNames[lineId]}</div></div>
+        <div style="font-size:12px;font-weight:700;color:${delay>8?"#a33800":delay>3?"#d97706":"#16a34a"};">+${delay.toFixed(0)}min</div>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:${color}18;"><span>${cl.emoji}</span><span style="font-size:11px;font-weight:700;color:${color};">${passengers}ppl</span></div>
+      </div>`;
+    }catch(e){html+=`<div style="background:white;border-radius:12px;padding:16px 20px;border:1px solid #e5e7eb;">Stop ${i+1} - ${stops[i]}</div>`;}
+  }
+  document.getElementById("tp_result").innerHTML=html;
+}
+function setAnalyticsLine(line){
+  ["ALL","L01","L02","L03","L04","L05"].forEach(l=>{
+    const btn=document.getElementById("ab-"+l);
+    btn.style.background=l===line?"#003ec7":"white";
+    btn.style.color=l===line?"white":"#737688";
+    btn.style.border=l===line?"none":"1px solid #e5e7eb";
+  });
+  renderAnalytics(line);
+}
+function renderAnalytics(line){
+  const hours=Object.keys(DATA.delayByHour).map(Number);
+  const getDelay=h=>line==="ALL"?DATA.delayByHour[h]:(DATA.delayLineHour[line]?.[h]??DATA.delayByHour[h]);
+  const getCrowd=h=>line==="ALL"?DATA.crowdByHour[h]:(DATA.crowdLineHour[line]?.[h]??DATA.crowdByHour[h]);
+  const delays=hours.map(getDelay),crowds=hours.map(getCrowd);
+  const maxD=Math.max(...delays),maxC=Math.max(...crowds),now=new Date().getHours();
+  let dbars="",dlabels="",cbars="",clabels="";
+  hours.forEach((h,i)=>{
+    const dh=Math.round((delays[i]/maxD)*100),ch=Math.round((crowds[i]/maxC)*100),isNow=h===now;
+    dbars+=`<div style="flex:1;height:${dh}px;background:${isNow?"#003ec7":"#b7c4ff"};border-radius:3px 3px 0 0;"></div>`;
+    dlabels+=`<div style="flex:1;text-align:center;font-size:9px;color:${isNow?"#003ec7":"#737688"};font-weight:${isNow?900:400};">${h}</div>`;
+    cbars+=`<div style="flex:1;height:${ch}px;background:${isNow?"#003ec7":"#b7c4ff"};border-radius:3px 3px 0 0;"></div>`;
+    clabels+=`<div style="flex:1;text-align:center;font-size:9px;color:${isNow?"#003ec7":"#737688"};font-weight:${isNow?900:400};">${h}</div>`;
+  });
+  document.getElementById("a_delay_chart").innerHTML=dbars;
+  document.getElementById("a_delay_labels").innerHTML=dlabels;
+  document.getElementById("a_crowd_chart").innerHTML=cbars;
+  document.getElementById("a_crowd_labels").innerHTML=clabels;
+  const linesToShow=line==="ALL"?["L01","L02","L03","L04","L05"]:[line];
+  let tableHtml="";
+  linesToShow.forEach(l=>{
+    const delay=DATA.delayByLine[l],ontime=DATA.ontimeByLine[l];
+    tableHtml+=`<div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:40px;font-size:12px;font-weight:900;color:#003ec7;">${l}</div>
+      <div style="flex:1;font-size:12px;color:#434656;">${DATA.lineNames[l]}</div>
+      <div style="width:80px;font-size:12px;font-weight:700;color:${delay>8?"#a33800":"#16a34a"};text-align:right;">+${delay}min</div>
+      <div style="width:140px;"><div style="height:6px;background:#f2f4f6;border-radius:3px;overflow:hidden;"><div style="width:${ontime}%;height:100%;background:${ontime>35?"#16a34a":"#f97316"};border-radius:3px;"></div></div><div style="font-size:10px;color:#737688;margin-top:2px;text-align:right;">${ontime}% on time</div></div>
+    </div>`;
+  });
+  document.getElementById("a_lines_table").innerHTML=tableHtml;
+}
+function saveSettings(){
+  API_BASE=document.getElementById("s_api").value.trim()||API_BASE_DEFAULT;
+  const s=document.getElementById("s_saved");s.style.display="inline";
+  setTimeout(()=>{s.style.display="none";},2000);
+}
+renderDashboard();
 </script>
 </body>
 </html>
