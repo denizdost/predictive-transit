@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+*.pkl
+model/model_delay.pkl
+model/model_crowd.pkl
+model/encoders.pkl
+model/features.pkl
+.DS_Store

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predictive Transit — Sivas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a; --surface: #111827; --border: #1f2d45;
+    --accent: #3b82f6; --accent2: #06b6d4; --text: #f1f5f9;
+    --muted: #64748b; --green: #22c55e; --yellow: #eab308;
+    --orange: #f97316; --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px; opacity: 0.4; z-index: 0; pointer-events: none;
+  }
+  .container { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 24px 16px 80px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .live-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--green); background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); padding: 4px 10px; border-radius: 20px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+  .selector-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  select, input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; appearance: none; cursor: pointer; transition: border-color 0.2s; }
+  select:focus, input:focus { outline: none; border-color: var(--accent); }
+  label { display: block; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+  .field { margin-bottom: 4px; }
+  .predict-btn { width: 100%; padding: 15px; margin-top: 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 12px; color: white; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+  .predict-btn:hover { opacity: 0.9; }
+  .predict-btn:active { transform: scale(0.98); }
+  .predict-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .result-card { margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); display: none; }
+  .result-card.visible { display: block; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .card-line { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .arrival-block { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 20px; }
+  .arrival-minutes { font-family: 'Syne', sans-serif; font-size: 72px; font-weight: 800; line-height: 1; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .arrival-unit { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); padding-bottom: 12px; }
+  .status-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-family: 'DM Mono', monospace; margin-bottom: 20px; }
+  .status-tag.ontime { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .status-tag.late { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .crowd-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .crowd-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .crowd-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .crowd-count { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
+  .crowd-bar-bg { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .crowd-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .meta-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .meta-chip { padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); }
+  .error-box { margin-top: 16px; padding: 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; font-size: 13px; color: var(--red); display: none; }
+  .error-box.visible { display: block; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .section-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 28px 0 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">PREDICTIVE TRANSIT</div>
+    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+  </header>
+  <div class="section-title">Select your stop</div>
+  <div class="selector-row">
+    <div class="field">
+      <label>Bus Line</label>
+      <select id="lineSelect">
+        <option value="">— Choose Line —</option>
+        <option value="L01">L01 — Merkez</option>
+        <option value="L02">L02 — Line 2</option>
+        <option value="L03">L03 — Line 3</option>
+        <option value="L04">L04 — Line 4</option>
+        <option value="L05">L05 — Line 5</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Weather</label>
+      <select id="weather">
+        <option value="clear">☀️ Clear</option>
+        <option value="cloudy">⛅ Cloudy</option>
+        <option value="rain">🌧️ Rain</option>
+        <option value="snow">❄️ Snow</option>
+        <option value="fog">🌫️ Fog</option>
+        <option value="wind">💨 Wind</option>
+      </select>
+    </div>
+  </div>
+  <div class="selector-row">
+    <div class="field">
+      <label>Traffic</label>
+      <select id="traffic">
+        <option value="low">🟢 Low</option>
+        <option value="moderate" selected>🟡 Moderate</option>
+        <option value="high">🟠 High</option>
+        <option value="congested">🔴 Congested</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Stop Type</label>
+      <select id="stopType">
+        <option value="regular">Regular</option>
+        <option value="terminal">Terminal</option>
+        <option value="university">University</option>
+        <option value="hospital">Hospital</option>
+        <option value="market">Market</option>
+        <option value="residential">Residential</option>
+      </select>
+    </div>
+  </div>
+  <div class="selector-row">
+    <div class="field">
+      <label>Cumulative Delay (min)</label>
+      <input type="number" id="cumDelay" value="2" min="0" max="60" step="0.5">
+    </div>
+    <div class="field">
+      <label>Speed Factor (0–1)</label>
+      <input type="number" id="speedFactor" value="0.85" min="0" max="1" step="0.05">
+    </div>
+  </div>
+  <button class="predict-btn" onclick="predict()" id="predictBtn">Predict Arrival & Crowd</button>
+  <div class="error-box" id="errorBox"></div>
+  <div class="result-card" id="resultCard">
+    <div class="card-line" id="cardLine">—</div>
+    <div class="arrival-block">
+      <div class="arrival-minutes" id="arrivalMins">—</div>
+      <div class="arrival-unit">min</div>
+    </div>
+    <div class="status-tag" id="statusTag">—</div>
+    <div class="divider"></div>
+    <div class="crowd-label">People waiting at stop</div>
+    <div class="crowd-row">
+      <div class="crowd-name" id="crowdName">—</div>
+      <div class="crowd-count" id="crowdCount">— people</div>
+    </div>
+    <div class="crowd-bar-bg"><div class="crowd-bar-fill" id="crowdBar" style="width:0%"></div></div>
+    <div class="meta-row" id="metaRow"></div>
+  </div>
+</div>
+<script>
+  const API_BASE = "http://localhost:8000";
+  function timeBucket(h) {
+    if (h>=5&&h<7) return "early_morning";
+    if (h>=7&&h<9) return "morning_rush";
+    if (h>=9&&h<12) return "midday";
+    if (h>=12&&h<13) return "lunch";
+    if (h>=13&&h<16) return "afternoon";
+    if (h>=16&&h<19) return "evening_rush";
+    return "evening";
+  }
+  function crowdColor(l) {
+    return {Empty:"#22c55e",Light:"#84cc16",Moderate:"#eab308",Busy:"#f97316",Crowded:"#ef4444"}[l]||"#3b82f6";
+  }
+  async function predict() {
+    const btn=document.getElementById("predictBtn");
+    const errorBox=document.getElementById("errorBox");
+    const card=document.getElementById("resultCard");
+    errorBox.classList.remove("visible");
+    card.classList.remove("visible");
+    const now=new Date();
+    const hour=now.getHours();
+    const dow=now.getDay()===0?6:now.getDay()-1;
+    const isWeekend=(now.getDay()===0||now.getDay()===6)?1:0;
+    const lineId=document.getElementById("lineSelect").value;
+    const weather=document.getElementById("weather").value;
+    const traffic=document.getElementById("traffic").value;
+    const stopType=document.getElementById("stopType").value;
+    const cumDelay=parseFloat(document.getElementById("cumDelay").value)||0;
+    const speed=parseFloat(document.getElementById("speedFactor").value)||0.85;
+    if(!lineId){errorBox.textContent="Please select a bus line first.";errorBox.classList.add("visible");return;}
+    btn.disabled=true;
+    btn.innerHTML='<span class="spinner"></span>Predicting…';
+    try {
+      const body={line_id:lineId,stop_sequence:3,stop_type:stopType,hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumDelay,speed_factor:speed,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:timeBucket(hour),dwell_time_min:1.0};
+      const [arrRes,crowdRes]=await Promise.all([
+        fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),
+        fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+      ]);
+      if(!arrRes.ok||!crowdRes.ok) throw new Error("API error");
+      const arr=await arrRes.json();
+      const crowd=await crowdRes.json();
+      document.getElementById("cardLine").textContent=`${lineId} · ${stopType.toUpperCase()} · ${timeBucket(hour).replace(/_/g," ").toUpperCase()}`;
+      const delay=arr.predicted_delay_min;
+      document.getElementById("arrivalMins").textContent=delay<=0?"Now":delay.toFixed(0);
+      const tag=document.getElementById("statusTag");
+      if(arr.is_delayed){tag.textContent=`⚠ ${arr.status}`;tag.className="status-tag late";}
+      else{tag.textContent="✓ On time";tag.className="status-tag ontime";}
+      document.getElementById("crowdName").textContent=crowd.crowding_emoji+" "+crowd.crowding_level;
+      document.getElementById("crowdName").style.color=crowdColor(crowd.crowding_level);
+      document.getElementById("crowdCount").textContent=`~${crowd.predicted_passengers} people`;
+      const bar=document.getElementById("crowdBar");
+      bar.style.background=crowdColor(crowd.crowding_level);
+      setTimeout(()=>{bar.style.width=Math.min(100,crowd.predicted_passengers)+"%;"},50);
+      document.getElementById("metaRow").innerHTML=`<span class="meta-chip">${weather}</span><span class="meta-chip">${traffic} traffic</span><span class="meta-chip">${timeBucket(hour).replace(/_/g," ")}</span><span class="meta-chip">speed ×${speed}</span>`;
+      card.classList.add("visible");
+    } catch(err) {
+      errorBox.textContent="Could not reach the API. Make sure the backend is running on "+API_BASE;
+      errorBox.classList.add("visible");
+    } finally {
+      btn.disabled=false;
+      btn.innerHTML="Predict Arrival & Crowd";
+    }
+  }
+</script>
+</body>
+</html>
