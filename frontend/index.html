@@ -1,211 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Predictive Transit — Sivas</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Predictive Transit - Sivas</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{"primary":"#003ec7","primary-container":"#0052ff","on-primary":"#ffffff","secondary":"#a33800","surface":"#f8f9fc","surface-container-lowest":"#ffffff","surface-container-low":"#f2f4f6","surface-container":"#eceef0","surface-container-high":"#e7e8eb","surface-container-highest":"#e1e2e5","on-surface":"#191c1e","on-surface-variant":"#434656","outline":"#737688","outline-variant":"#c3c5d9"},fontFamily:{headline:["Plus Jakarta Sans"],body:["Inter"]}}}}
+</script>
 <style>
-  :root {
-    --bg: #0a0e1a; --surface: #111827; --border: #1f2d45;
-    --accent: #3b82f6; --accent2: #06b6d4; --text: #f1f5f9;
-    --muted: #64748b; --green: #22c55e; --yellow: #eab308;
-    --orange: #f97316; --red: #ef4444;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px; opacity: 0.4; z-index: 0; pointer-events: none;
-  }
-  .container { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 24px 16px 80px; }
-  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-  .logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .live-badge { display: flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--green); background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); padding: 4px 10px; border-radius: 20px; }
-  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease infinite; }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-  .selector-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  select, input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; appearance: none; cursor: pointer; transition: border-color 0.2s; }
-  select:focus, input:focus { outline: none; border-color: var(--accent); }
-  label { display: block; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
-  .field { margin-bottom: 4px; }
-  .predict-btn { width: 100%; padding: 15px; margin-top: 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 12px; color: white; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
-  .predict-btn:hover { opacity: 0.9; }
-  .predict-btn:active { transform: scale(0.98); }
-  .predict-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .result-card { margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); display: none; }
-  .result-card.visible { display: block; }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  .card-line { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-  .arrival-block { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 20px; }
-  .arrival-minutes { font-family: 'Syne', sans-serif; font-size: 72px; font-weight: 800; line-height: 1; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .arrival-unit { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--muted); padding-bottom: 12px; }
-  .status-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-family: 'DM Mono', monospace; margin-bottom: 20px; }
-  .status-tag.ontime { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-  .status-tag.late { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-  .divider { height: 1px; background: var(--border); margin: 20px 0; }
-  .crowd-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-  .crowd-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .crowd-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
-  .crowd-count { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
-  .crowd-bar-bg { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-  .crowd-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
-  .meta-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-  .meta-chip { padding: 5px 10px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); }
-  .error-box { margin-top: 16px; padding: 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; font-size: 13px; color: var(--red); display: none; }
-  .error-box.visible { display: block; }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .section-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 28px 0 14px; }
+.material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24}
+.fill-icon{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
+.tabular-nums{font-variant-numeric:tabular-nums}
+.live-dot{animation:blink 1.4s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.bar-fill{transition:width .8s cubic-bezier(.16,1,.3,1)}
 </style>
 </head>
-<body>
-<div class="container">
-  <header>
-    <div class="logo">PREDICTIVE TRANSIT</div>
-    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
-  </header>
-  <div class="section-title">Select your stop</div>
-  <div class="selector-row">
-    <div class="field">
-      <label>Bus Line</label>
-      <select id="lineSelect">
-        <option value="">— Choose Line —</option>
-        <option value="L01">L01 — Merkez</option>
-        <option value="L02">L02 — Line 2</option>
-        <option value="L03">L03 — Line 3</option>
-        <option value="L04">L04 — Line 4</option>
-        <option value="L05">L05 — Line 5</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Weather</label>
-      <select id="weather">
-        <option value="clear">☀️ Clear</option>
-        <option value="cloudy">⛅ Cloudy</option>
-        <option value="rain">🌧️ Rain</option>
-        <option value="snow">❄️ Snow</option>
-        <option value="fog">🌫️ Fog</option>
-        <option value="wind">💨 Wind</option>
-      </select>
+<body class="bg-[#f8f9fc] font-[Inter] text-[#191c1e] antialiased min-h-screen">
+<aside class="fixed left-0 top-0 h-full w-64 flex flex-col z-40 bg-white border-r border-gray-200">
+  <div class="px-6 py-8">
+    <h1 class="text-lg font-extrabold tracking-tight text-[#191c1e] font-[Plus_Jakarta_Sans]">Predictive Transit</h1>
+    <p class="text-xs text-[#737688] mt-1">Precision Pulse - Sivas</p>
+  </div>
+  <nav class="flex-1 px-4 space-y-1">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
+      <span class="material-symbols-outlined text-xl">dashboard</span><span class="text-sm font-medium">Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
+      <span class="material-symbols-outlined text-xl">analytics</span><span class="text-sm font-medium">Route Analytics</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#003ec7] font-bold bg-[#f2f4f6] border-r-4 border-[#003ec7]" href="#">
+      <span class="material-symbols-outlined text-xl">directions_bus</span><span class="text-sm">Stop Predictor</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#737688] hover:bg-[#f2f4f6] transition-colors" href="#">
+      <span class="material-symbols-outlined text-xl">settings</span><span class="text-sm font-medium">Settings</span>
+    </a>
+  </nav>
+  <div class="p-6">
+    <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#f2f4f6]">
+      <span class="w-2 h-2 rounded-full bg-green-500 live-dot"></span>
+      <span class="text-xs font-bold text-green-600">LIVE PREDICTIONS</span>
     </div>
   </div>
-  <div class="selector-row">
-    <div class="field">
-      <label>Traffic</label>
-      <select id="traffic">
-        <option value="low">🟢 Low</option>
-        <option value="moderate" selected>🟡 Moderate</option>
-        <option value="high">🟠 High</option>
-        <option value="congested">🔴 Congested</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Stop Type</label>
-      <select id="stopType">
-        <option value="regular">Regular</option>
-        <option value="terminal">Terminal</option>
-        <option value="university">University</option>
-        <option value="hospital">Hospital</option>
-        <option value="market">Market</option>
-        <option value="residential">Residential</option>
-      </select>
+</aside>
+<header class="fixed top-0 right-0 left-64 h-16 flex items-center justify-between px-6 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+  <span class="text-base font-black tracking-tight text-[#003ec7] font-[Plus_Jakarta_Sans]">Stop Predictor</span>
+  <div class="flex items-center gap-2 text-xs text-[#737688]">
+    <span class="material-symbols-outlined text-base">schedule</span>
+    <span id="clockDisplay" class="tabular-nums font-medium"></span>
+  </div>
+</header>
+<main class="pl-64 pt-16 min-h-screen bg-[#f8f9fc]">
+  <div class="p-8 max-w-6xl mx-auto">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <section class="lg:w-80 space-y-5 shrink-0">
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-[#737688] mb-5">Predict Your Stop</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Bus Line</label>
+              <select id="lineSelect" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-1 focus:ring-[#003ec7]">
+                <option value="">- Select Line -</option>
+                <option value="L01">L01 - Merkez</option>
+                <option value="L02">L02 - Line 2</option>
+                <option value="L03">L03 - Line 3</option>
+                <option value="L04">L04 - Line 4</option>
+                <option value="L05">L05 - Line 5</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Stop Type</label>
+              <select id="stopType" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium focus:ring-1 focus:ring-[#003ec7]">
+                <option value="regular">Regular</option>
+                <option value="terminal">Terminal</option>
+                <option value="university">University</option>
+                <option value="hospital">Hospital</option>
+                <option value="market">Market</option>
+                <option value="residential">Residential</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Weather</label>
+                <select id="weather" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium">
+                  <option value="clear">Clear</option>
+                  <option value="cloudy">Cloudy</option>
+                  <option value="rain">Rain</option>
+                  <option value="snow">Snow</option>
+                  <option value="fog">Fog</option>
+                  <option value="wind">Wind</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Traffic</label>
+                <select id="traffic" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium">
+                  <option value="low">Low</option>
+                  <option value="moderate" selected>Moderate</option>
+                  <option value="high">High</option>
+                  <option value="congested">Congested</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Delay (min)</label>
+                <input type="number" id="cumDelay" value="2" min="0" max="60" step="0.5" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium"/>
+              </div>
+              <div>
+                <label class="text-[10px] font-bold uppercase tracking-widest text-[#737688] block mb-1.5">Speed x</label>
+                <input type="number" id="speedFactor" value="0.85" min="0" max="1" step="0.05" class="w-full bg-[#e1e2e5] border-none rounded-lg px-3 py-2.5 text-sm font-medium"/>
+              </div>
+            </div>
+          </div>
+          <button onclick="predict()" id="predictBtn" class="mt-5 w-full py-3 rounded-lg bg-[#003ec7] text-white font-bold text-sm tracking-wide hover:bg-[#0052ff] active:scale-[0.98] transition-all disabled:opacity-50">
+            <span id="btnText">Predict Arrival and Crowd</span>
+          </button>
+          <div id="errorBox" class="hidden mt-3 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium"></div>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <h3 class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-3">Model Performance</h3>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[#434656]">Arrival Model</span>
+              <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded uppercase">MAE 0.01 min</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[#434656]">Crowd Model</span>
+              <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded uppercase">RMSE 7.27</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[#434656]">Dataset</span>
+              <span class="text-[10px] font-bold text-[#003ec7] bg-blue-50 px-2 py-0.5 rounded uppercase">Sivas Mar 2025</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="flex-1 space-y-5">
+        <div id="emptyState" class="bg-white rounded-xl p-12 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-64">
+          <span class="material-symbols-outlined text-5xl text-gray-300 mb-4">directions_bus</span>
+          <p class="text-sm font-bold text-[#434656]">Select a bus line and click Predict</p>
+          <p class="text-xs text-[#737688] mt-1">Real-time arrival and crowd forecast will appear here</p>
+        </div>
+        <div id="resultSection" class="hidden space-y-5">
+          <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-start justify-between mb-6">
+              <div>
+                <div id="cardLine" class="text-[10px] font-black uppercase tracking-[0.2em] text-[#737688] mb-1">-</div>
+                <div id="cardBucket" class="text-xs text-[#434656] font-medium">-</div>
+              </div>
+              <div id="statusBadge" class="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-</div>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-2">Arrives in</div>
+                <div class="flex items-end gap-2">
+                  <span id="arrivalMins" class="text-7xl font-black tabular-nums tracking-tighter text-[#003ec7] font-[Plus_Jakarta_Sans]">-</span>
+                  <span class="text-lg font-medium text-[#737688] pb-3">min</span>
+                </div>
+              </div>
+              <div class="text-right space-y-3">
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-1">Reliability</div>
+                  <div class="flex items-center gap-1 justify-end">
+                    <span id="reliabilityPct" class="text-2xl font-black tabular-nums text-[#191c1e] font-[Plus_Jakarta_Sans]">-</span>
+                    <span id="reliabilityIcon" class="material-symbols-outlined fill-icon text-xl text-green-500">verified</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-1">Delay</div>
+                  <div id="delayValue" class="text-sm font-bold">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688]">Stop Occupancy</h4>
+                <span id="crowdBadge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase">-</span>
+              </div>
+              <div class="flex items-end gap-2 mb-3">
+                <span id="crowdEmoji" class="text-2xl">-</span>
+                <span id="crowdName" class="text-xl font-black font-[Plus_Jakarta_Sans]">-</span>
+              </div>
+              <div class="h-2 w-full bg-[#e7e8eb] rounded-full overflow-hidden mb-2">
+                <div id="crowdBar" class="h-full rounded-full bar-fill" style="width:0%"></div>
+              </div>
+              <p id="crowdCount" class="text-[10px] text-[#737688] mt-2">- people waiting</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688]">Route Reliability</h4>
+                <span id="routeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-[#eceef0] text-[#737688]">-</span>
+              </div>
+              <div class="flex items-end gap-1 h-10 mb-3" id="pulseBars"></div>
+              <p id="pulseNote" class="text-[10px] text-[#737688]">Based on current conditions</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-[#737688] mb-4">Conditions</h4>
+            <div id="conditionsRow" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
-  <div class="selector-row">
-    <div class="field">
-      <label>Cumulative Delay (min)</label>
-      <input type="number" id="cumDelay" value="2" min="0" max="60" step="0.5">
-    </div>
-    <div class="field">
-      <label>Speed Factor (0–1)</label>
-      <input type="number" id="speedFactor" value="0.85" min="0" max="1" step="0.05">
-    </div>
-  </div>
-  <button class="predict-btn" onclick="predict()" id="predictBtn">Predict Arrival & Crowd</button>
-  <div class="error-box" id="errorBox"></div>
-  <div class="result-card" id="resultCard">
-    <div class="card-line" id="cardLine">—</div>
-    <div class="arrival-block">
-      <div class="arrival-minutes" id="arrivalMins">—</div>
-      <div class="arrival-unit">min</div>
-    </div>
-    <div class="status-tag" id="statusTag">—</div>
-    <div class="divider"></div>
-    <div class="crowd-label">People waiting at stop</div>
-    <div class="crowd-row">
-      <div class="crowd-name" id="crowdName">—</div>
-      <div class="crowd-count" id="crowdCount">— people</div>
-    </div>
-    <div class="crowd-bar-bg"><div class="crowd-bar-fill" id="crowdBar" style="width:0%"></div></div>
-    <div class="meta-row" id="metaRow"></div>
-  </div>
-</div>
+</main>
 <script>
-  const API_BASE = "http://localhost:8000";
-  function timeBucket(h) {
-    if (h>=5&&h<7) return "early_morning";
-    if (h>=7&&h<9) return "morning_rush";
-    if (h>=9&&h<12) return "midday";
-    if (h>=12&&h<13) return "lunch";
-    if (h>=13&&h<16) return "afternoon";
-    if (h>=16&&h<19) return "evening_rush";
-    return "evening";
-  }
-  function crowdColor(l) {
-    return {Empty:"#22c55e",Light:"#84cc16",Moderate:"#eab308",Busy:"#f97316",Crowded:"#ef4444"}[l]||"#3b82f6";
-  }
-  async function predict() {
-    const btn=document.getElementById("predictBtn");
-    const errorBox=document.getElementById("errorBox");
-    const card=document.getElementById("resultCard");
-    errorBox.classList.remove("visible");
-    card.classList.remove("visible");
-    const now=new Date();
-    const hour=now.getHours();
-    const dow=now.getDay()===0?6:now.getDay()-1;
-    const isWeekend=(now.getDay()===0||now.getDay()===6)?1:0;
-    const lineId=document.getElementById("lineSelect").value;
-    const weather=document.getElementById("weather").value;
-    const traffic=document.getElementById("traffic").value;
-    const stopType=document.getElementById("stopType").value;
-    const cumDelay=parseFloat(document.getElementById("cumDelay").value)||0;
-    const speed=parseFloat(document.getElementById("speedFactor").value)||0.85;
-    if(!lineId){errorBox.textContent="Please select a bus line first.";errorBox.classList.add("visible");return;}
-    btn.disabled=true;
-    btn.innerHTML='<span class="spinner"></span>Predicting…';
-    try {
-      const body={line_id:lineId,stop_sequence:3,stop_type:stopType,hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumDelay,speed_factor:speed,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:timeBucket(hour),dwell_time_min:1.0};
-      const [arrRes,crowdRes]=await Promise.all([
-        fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),
-        fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-      ]);
-      if(!arrRes.ok||!crowdRes.ok) throw new Error("API error");
-      const arr=await arrRes.json();
-      const crowd=await crowdRes.json();
-      document.getElementById("cardLine").textContent=`${lineId} · ${stopType.toUpperCase()} · ${timeBucket(hour).replace(/_/g," ").toUpperCase()}`;
-      const delay=arr.predicted_delay_min;
-      document.getElementById("arrivalMins").textContent=delay<=0?"Now":delay.toFixed(0);
-      const tag=document.getElementById("statusTag");
-      if(arr.is_delayed){tag.textContent=`⚠ ${arr.status}`;tag.className="status-tag late";}
-      else{tag.textContent="✓ On time";tag.className="status-tag ontime";}
-      document.getElementById("crowdName").textContent=crowd.crowding_emoji+" "+crowd.crowding_level;
-      document.getElementById("crowdName").style.color=crowdColor(crowd.crowding_level);
-      document.getElementById("crowdCount").textContent=`~${Math.max(0,crowd.predicted_passengers)} people`;
-      const bar=document.getElementById("crowdBar");
-      bar.style.background=crowdColor(crowd.crowding_level);
-      setTimeout(()=>{bar.style.width=Math.min(100,Math.max(0,crowd.predicted_passengers))+"%;"},50);
-      document.getElementById("metaRow").innerHTML=`<span class="meta-chip">${weather}</span><span class="meta-chip">${traffic} traffic</span><span class="meta-chip">${timeBucket(hour).replace(/_/g," ")}</span><span class="meta-chip">speed ×${speed}</span>`;
-      card.classList.add("visible");
-    } catch(err) {
-      errorBox.textContent="Could not reach the API. Make sure the backend is running on "+API_BASE;
-      errorBox.classList.add("visible");
-    } finally {
-      btn.disabled=false;
-      btn.innerHTML="Predict Arrival & Crowd";
-    }
-  }
+const API_BASE="http://localhost:8000";
+function updateClock(){const n=new Date();document.getElementById("clockDisplay").textContent=n.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+setInterval(updateClock,1000);updateClock();
+function timeBucket(h){if(h>=5&&h<7)return"early_morning";if(h>=7&&h<9)return"morning_rush";if(h>=9&&h<12)return"midday";if(h>=12&&h<13)return"lunch";if(h>=13&&h<16)return"afternoon";if(h>=16&&h<19)return"evening_rush";return"evening";}
+function crowdColor(l){return{Empty:"#22c55e",Light:"#84cc16",Moderate:"#eab308",Busy:"#f97316",Crowded:"#ef4444"}[l]||"#003ec7";}
+function reliabilityPct(d){return Math.max(10,Math.round(100-d*3));}
+function pulseBars(r){let h="";for(let i=0;i<8;i++){const ht=30+Math.random()*70;const op=i<Math.round((r/100)*8)?"1":"0.15";const c=r>=80?"#003ec7":r>=50?"#eab308":"#a33800";h+=`<div class="flex-1 rounded-sm" style="height:${ht}%;background:${c};opacity:${op}"></div>`;}return h;}
+async function predict(){
+  const btn=document.getElementById("predictBtn"),btnText=document.getElementById("btnText"),errorBox=document.getElementById("errorBox"),emptyState=document.getElementById("emptyState"),resultSection=document.getElementById("resultSection");
+  errorBox.classList.add("hidden");
+  const lineId=document.getElementById("lineSelect").value;
+  if(!lineId){errorBox.textContent="Please select a bus line.";errorBox.classList.remove("hidden");return;}
+  const now=new Date(),hour=now.getHours(),dow=now.getDay()===0?6:now.getDay()-1,isWeekend=(now.getDay()===0||now.getDay()===6)?1:0,bucket=timeBucket(hour);
+  const weather=document.getElementById("weather").value,traffic=document.getElementById("traffic").value,stopType=document.getElementById("stopType").value;
+  const cumDelay=parseFloat(document.getElementById("cumDelay").value)||0,speed=parseFloat(document.getElementById("speedFactor").value)||0.85;
+  btn.disabled=true;btnText.textContent="Predicting...";
+  try{
+    const body={line_id:lineId,stop_sequence:3,stop_type:stopType,hour_of_day:hour,day_of_week:dow,is_weekend:isWeekend,cumulative_delay_min:cumDelay,speed_factor:speed,minutes_to_next_bus:12,weather_condition:weather,traffic_level:traffic,time_bucket:bucket,dwell_time_min:1.0};
+    const[arrRes,crowdRes]=await Promise.all([fetch(`${API_BASE}/predict-arrival`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),fetch(`${API_BASE}/predict-crowd`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})]);
+    if(!arrRes.ok||!crowdRes.ok)throw new Error("API error");
+    const arr=await arrRes.json(),crowd=await crowdRes.json();
+    const delay=Math.max(0,arr.predicted_delay_min),passengers=Math.max(0,crowd.predicted_passengers),rel=reliabilityPct(delay),crowdPct=Math.min(100,Math.round((passengers/100)*100));
+    document.getElementById("cardLine").textContent=lineId+" - "+stopType.toUpperCase()+" STOP";
+    document.getElementById("cardBucket").textContent=bucket.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+    document.getElementById("arrivalMins").textContent=delay<=0?"0":delay.toFixed(0);
+    const badge=document.getElementById("statusBadge");
+    if(arr.is_delayed){badge.textContent="! "+arr.status;badge.className="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide bg-red-50 text-red-700 border border-red-200";}
+    else{badge.textContent="On Time";badge.className="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide bg-green-50 text-green-700 border border-green-200";}
+    document.getElementById("reliabilityPct").textContent=rel+"%";
+    const ri=document.getElementById("reliabilityIcon");
+    if(rel>=80){ri.textContent="verified";ri.className="material-symbols-outlined fill-icon text-xl text-green-500";}
+    else if(rel>=50){ri.textContent="warning";ri.className="material-symbols-outlined fill-icon text-xl text-amber-500";}
+    else{ri.textContent="error";ri.className="material-symbols-outlined fill-icon text-xl text-red-500";}
+    document.getElementById("delayValue").textContent=delay<=0?"No delay":"+"+delay.toFixed(1)+" min";
+    const color=crowdColor(crowd.crowding_level);
+    document.getElementById("crowdEmoji").textContent=crowd.crowding_emoji;
+    document.getElementById("crowdName").textContent=crowd.crowding_level;
+    document.getElementById("crowdCount").textContent="~"+passengers+" people waiting at stop";
+    const cb=document.getElementById("crowdBar");
+    cb.style.background="linear-gradient(to right,"+color+"aa,"+color+")";
+    setTimeout(()=>{cb.style.width=crowdPct+"%";},50);
+    const cbadge=document.getElementById("crowdBadge");
+    cbadge.textContent=crowd.crowding_level;cbadge.style.cssText="background:"+color+"18;color:"+color+";border:1px solid "+color+"40;";
+    document.getElementById("pulseBars").innerHTML=pulseBars(rel);
+    document.getElementById("routeBadge").textContent=rel>=80?"Stable":rel>=50?"Variable":"Unreliable";
+    document.getElementById("pulseNote").textContent=rel>=80?"Trending well - "+rel+"% reliability":"Some delays expected - "+rel+"% reliability";
+    const icons={clear:"wb_sunny",cloudy:"cloud",rain:"rainy",snow:"ac_unit",fog:"foggy",wind:"air"};
+    const tc={low:"color:green",moderate:"color:#d97706",high:"color:#ea580c",congested:"color:#dc2626"};
+    document.getElementById("conditionsRow").innerHTML=
+      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#003ec7]'>"+(icons[weather]||"cloud")+"</span><span class='text-xs font-medium capitalize'>"+weather+"</span></div>"+
+      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm' style='"+tc[traffic]+"'>traffic</span><span class='text-xs font-medium capitalize'>"+traffic+" traffic</span></div>"+
+      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#737688]'>schedule</span><span class='text-xs font-medium capitalize'>"+bucket.replace(/_/g," ")+"</span></div>"+
+      "<div class='flex items-center gap-1.5 bg-[#f2f4f6] px-3 py-1.5 rounded-lg'><span class='material-symbols-outlined text-sm text-[#737688]'>speed</span><span class='text-xs font-medium'>Speed x"+speed+"</span></div>";
+    emptyState.classList.add("hidden");resultSection.classList.remove("hidden");
+  }catch(err){errorBox.textContent="Could not reach the API at "+API_BASE;errorBox.classList.remove("hidden");}
+  finally{btn.disabled=false;btnText.textContent="Predict Arrival and Crowd";}
+}
 </script>
 </body>
 </html>
