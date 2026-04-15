@@ -192,10 +192,10 @@
       else{tag.textContent="✓ On time";tag.className="status-tag ontime";}
       document.getElementById("crowdName").textContent=crowd.crowding_emoji+" "+crowd.crowding_level;
       document.getElementById("crowdName").style.color=crowdColor(crowd.crowding_level);
-      document.getElementById("crowdCount").textContent=`~${crowd.predicted_passengers} people`;
+      document.getElementById("crowdCount").textContent=`~${Math.max(0,crowd.predicted_passengers)} people`;
       const bar=document.getElementById("crowdBar");
       bar.style.background=crowdColor(crowd.crowding_level);
-      setTimeout(()=>{bar.style.width=Math.min(100,crowd.predicted_passengers)+"%;"},50);
+      setTimeout(()=>{bar.style.width=Math.min(100,Math.max(0,crowd.predicted_passengers))+"%;"},50);
       document.getElementById("metaRow").innerHTML=`<span class="meta-chip">${weather}</span><span class="meta-chip">${traffic} traffic</span><span class="meta-chip">${timeBucket(hour).replace(/_/g," ")}</span><span class="meta-chip">speed ×${speed}</span>`;
       card.classList.add("visible");
     } catch(err) {
