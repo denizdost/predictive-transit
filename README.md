@@ -108,19 +108,6 @@ terminal-sivas/
 
 :handshake: Contributing
 
-Whether you're improving the ML models, adding new bus routes, or tweaking the UI, contributions are welcome!
-
-Fork the Project
-
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-
-Push to the Branch (git push origin feature/AmazingFeature)
-
-Open a Pull Request
-
-<div align="center">
 <i>Built for the commuters of tomorrow.</i>
 
 
