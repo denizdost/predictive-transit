@@ -25,7 +25,7 @@
           metrored: {
             50: '#fdf2f2',
             100: '#fce5e5',
-            500: '#e3001b', // Metro Madrid Red
+            500: '#e3001b', 
             600: '#cc0018',
             700: '#b30015',
             900: '#80000f',
@@ -33,7 +33,7 @@
           metroblue: {
             50: '#f0f5fa',
             100: '#e1ebf5',
-            500: '#003882', // Metro Madrid Blue
+            500: '#003882', 
             600: '#002d68',
             800: '#001b3e',
             900: '#001229',
@@ -42,6 +42,15 @@
         boxShadow: {
           'solid': '0 2px 10px rgba(0, 0, 0, 0.08)',
           'heavy': '0 4px 20px rgba(0, 0, 0, 0.15)',
+        },
+        animation: {
+          'marquee': 'marquee 50s linear infinite',
+        },
+        keyframes: {
+          marquee: {
+            '0%': { transform: 'translateX(100%)' },
+            '100%': { transform: 'translateX(-100%)' },
+          }
         }
       }
     }
@@ -50,9 +59,7 @@
 <style>
   .material-symbols-outlined { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }
   .tabular-nums { font-variant-numeric: tabular-nums; }
-  .bar-fill { transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
   
-  /* Fast fade transitions, no bouncy slides for corporate feel */
   .page { display: none; animation: fadeIn 0.2s ease-out; }
   .page.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -72,7 +79,7 @@
   /* Custom Range Slider */
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 18px; height: 18px; border-radius: 0%; /* Square thumb */
+    width: 18px; height: 18px; border-radius: 0%;
     background: #e3001b; cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
@@ -89,34 +96,14 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #9ca3af; }
   .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-
-  /* Ambient Environmental UX Keyframes & Classes */
-  @keyframes fall {
-    0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
-    100% { transform: translateY(110vh) translateX(20px); opacity: 0; }
-  }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.1; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.2); }
-  }
-  @keyframes pulse-alert {
-    0%, 100% { box-shadow: inset 0 0 0px 0px rgba(227, 0, 27, 0); }
-    50% { box-shadow: inset 0 0 60px 15px rgba(227, 0, 27, 0.25); }
-  }
-  .snow-flake { position: absolute; background: white; border-radius: 50%; animation: fall linear infinite; pointer-events: none; }
-  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle ease-in-out infinite; pointer-events: none; }
-  .red-alert-glow { animation: pulse-alert 3s infinite ease-in-out; pointer-events: none; position: fixed; inset: 0; z-index: 40; border: 2px solid rgba(227, 0, 27, 0.1); }
 </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 min-h-screen flex flex-col selection:bg-metrored-500 selection:text-white">
 
-<!-- Ambient Effects Container -->
-<div id="ambient-container" class="pointer-events-none fixed inset-0 z-0 overflow-hidden"></div>
-
 <!-- Navigation Bar -->
 <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-    <!-- Logo (Simulating Metro Madrid Diamond Logo) -->
+    <!-- Logo -->
     <div class="flex items-center gap-4 hover:opacity-90 transition-opacity cursor-pointer" onclick="switchTab('predictor')">
       <div class="relative w-10 h-10 flex items-center justify-center">
         <div class="absolute w-7 h-7 bg-metrored-500 rotate-45 rounded-sm"></div>
@@ -138,20 +125,33 @@
       <button onclick="switchTab('planner')" id="nav-planner" class="nav-item h-full px-4 flex items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
         Network Explorer
       </button>
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="hidden nav-item h-full px-4 items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+        Dashboard
+      </button>
     </nav>
 
     <!-- Right Controls -->
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3 sm:gap-4">
       <div class="hidden sm:flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 py-1.5 px-3 rounded-sm bg-gray-50 dark:bg-gray-800">
         <span class="material-symbols-outlined text-[16px] text-metrored-500">schedule</span>
         <span id="clockDisplay" class="tabular-nums tracking-wider"></span>
       </div>
-      <button onclick="toggleAudioMode()" class="p-2 rounded-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-metroblue-500 border border-gray-200 dark:border-gray-600" aria-label="Toggle Audio Mode">
-        <span id="audio-icon" class="material-symbols-outlined text-[20px] block transition-colors">volume_off</span>
-      </button>
       <button onclick="toggleTheme()" class="p-2 rounded-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-metroblue-500 border border-gray-200 dark:border-gray-600" aria-label="Toggle Dark Mode">
         <span id="theme-icon" class="material-symbols-outlined text-[20px] block">dark_mode</span>
       </button>
+      
+      <!-- Auth Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Settings Button (Hidden by default) -->
+        <button id="settings-btn" onclick="openSettingsModal()" class="hidden items-center justify-center px-2 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-sm transition-colors shadow-sm border border-gray-200 dark:border-gray-600" title="Account Settings">
+          <span class="material-symbols-outlined text-[18px]">settings</span>
+        </button>
+        <!-- Auth Profile Button -->
+        <button id="auth-btn" onclick="toggleAuth()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-metroblue-600 hover:bg-metroblue-700 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-sm transition-colors border border-metroblue-800 shadow-sm">
+          <span class="material-symbols-outlined text-[18px]" id="auth-icon">login</span>
+          <span id="auth-text" class="hidden sm:inline">Login</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -160,8 +160,22 @@
     <button onclick="switchTab('predictor')" id="nav-predictor-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-metroblue-600 dark:text-white border-b-4 border-metrored-500 transition-colors">Live Times</button>
     <button onclick="switchTab('map')" id="nav-map-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Map</button>
     <button onclick="switchTab('planner')" id="nav-planner-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Explorer</button>
+    <button onclick="switchTab('dashboard')" id="nav-dashboard-mobile" class="hidden nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Dash</button>
   </div>
 </header>
+
+<!-- FEATURE 3: Service Alerts Banner -->
+<div id="service-alerts-banner" class="bg-amber-100 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-800 overflow-hidden relative h-9 flex items-center">
+  <div class="absolute left-0 z-10 bg-amber-100 dark:bg-[#3d2a0d] px-4 h-full flex items-center justify-center border-r border-amber-200 dark:border-amber-800 shadow-[10px_0_15px_-3px_rgba(0,0,0,0.1)]">
+    <span class="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400 animate-pulse">warning</span>
+    <span class="ml-2 text-xs font-extrabold uppercase tracking-widest text-amber-800 dark:text-amber-400">ALERTS</span>
+  </div>
+  <div class="w-full overflow-hidden whitespace-nowrap pl-28">
+    <div id="alert-ticker" class="inline-block animate-marquee text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+</div>
 
 <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
@@ -181,12 +195,28 @@
         <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase border-b-2 border-gray-100 dark:border-gray-700 pb-3 mb-5">Search Station</h2>
         
         <div class="space-y-6">
+          
+          <!-- FEATURE 1: Favorites Section -->
+          <div id="favorites-section" class="hidden">
+            <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+               <span class="material-symbols-outlined text-[14px] text-amber-400">star</span> Saved Stations
+            </label>
+            <div id="favorites-list" class="flex flex-wrap gap-2">
+              <!-- Dynamically populated favorites -->
+            </div>
+          </div>
+
           <div>
             <label for="p_global_stop" class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">Select Station</label>
-            <div class="relative">
-              <select id="p_global_stop" class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-4 py-3 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors cursor-pointer">
-                <option value="">Loading stations...</option>
-              </select>
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <select id="p_global_stop" onchange="updateFavoriteBtnState()" class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-4 py-3 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors cursor-pointer">
+                  <option value="">Loading stations...</option>
+                </select>
+              </div>
+              <button id="btn-toggle-fav" onclick="toggleFavorite()" class="w-12 h-[52px] bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-sm flex items-center justify-center text-gray-400 hover:text-amber-500 hover:border-amber-500 transition-colors" title="Save to Favorites">
+                 <span class="material-symbols-outlined text-[24px]" id="fav-icon">star</span>
+              </button>
             </div>
           </div>
         </div>
@@ -222,7 +252,7 @@
   </div>
 
   <div class="grid grid-cols-1 gap-6">
-    <!-- Map Controls (Route Planner & Time Machine) -->
+    <!-- Map Controls -->
     <div class="bg-white dark:bg-gray-800 rounded-sm shadow-solid border border-gray-200 dark:border-gray-700 p-5 flex flex-col gap-6">
       
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
@@ -230,13 +260,19 @@
           <div class="lg:col-span-8 flex flex-col gap-4">
             <div class="flex items-center justify-between border-b-2 border-gray-100 dark:border-gray-700 pb-2">
               <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase">Journey Planner</h2>
-              <button onclick="clearMapSelection()" class="px-3 py-1.5 text-xs font-bold uppercase text-metrored-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border border-transparent hover:border-red-200 rounded-sm">
-                Clear Pins
-              </button>
+              <div class="flex gap-2">
+                <!-- FEATURE 2: Locate Me Button -->
+                <button onclick="locateUserGPS()" class="px-3 py-1.5 text-xs font-bold uppercase text-metroblue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-200 rounded-sm flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">my_location</span> Near Me
+                </button>
+                <button onclick="clearMapSelection()" class="px-3 py-1.5 text-xs font-bold uppercase text-metrored-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border border-transparent hover:border-red-200 rounded-sm">
+                  Clear Pins
+                </button>
+              </div>
             </div>
             
             <div class="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-sm w-fit border border-gray-300 dark:border-gray-700 mb-2">
-              <button id="btn_mode_origin" onclick="setClickMode('origin')" class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-sm bg-metroblue-500 text-white shadow-sm flex items-center gap-1.5 transition-all"><span class="material-symbols-outlined text-[16px]">my_location</span> Origin</button>
+              <button id="btn_mode_origin" onclick="setClickMode('origin')" class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-sm bg-metroblue-500 text-white shadow-sm flex items-center gap-1.5 transition-all"><span class="material-symbols-outlined text-[16px]">pin_drop</span> Origin</button>
               <button id="btn_mode_dest" onclick="setClickMode('dest')" class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-sm text-gray-600 dark:text-gray-400 hover:text-metroblue-500 flex items-center gap-1.5 transition-all"><span class="material-symbols-outlined text-[16px]">flag</span> Destination</button>
             </div>
             
@@ -277,14 +313,13 @@
 
       <!-- Dynamic Itinerary Panel -->
       <div id="map_itinerary" class="hidden mt-2 p-0 bg-white dark:bg-gray-800 rounded-sm border-l-4 border-metrored-500 shadow-solid overflow-hidden border border-gray-200 dark:border-gray-700">
-          <!-- Populated via Javascript Animation Loop -->
       </div>
       
     </div>
 
     <!-- Map Container -->
     <div class="bg-white dark:bg-gray-800 rounded-sm shadow-solid border border-gray-200 dark:border-gray-700 p-1 overflow-hidden h-[500px] sm:h-[650px] relative z-0">
-      <div id="live-map" class="w-full h-full rounded-sm z-10 cursor-crosshair"></div>
+      <div id="live-map" class="w-full h-full rounded-sm z-10"></div>
       
       <!-- Live Conditions Overlay -->
       <div class="absolute top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
@@ -344,10 +379,20 @@
         <h3 class="text-xl font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest">No Line Selected</h3>
       </div>
       
-      <!-- List container for Timeline -->
       <div id="tp_result" class="hidden flex-col bg-white dark:bg-gray-800 rounded-sm shadow-solid border border-gray-200 dark:border-gray-700 p-6 sm:p-8"></div>
     </div>
   </div>
+</div>
+
+<!-- ==========================================
+     PAGE: DASHBOARD (Admin & User)
+     ========================================== -->
+<div id="page-dashboard" class="page">
+  <div class="mb-8 border-l-8 border-metrored-500 pl-4">
+    <h1 class="font-display text-3xl sm:text-4xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight" id="dash-title">Community Portal</h1>
+    <p class="text-base font-medium text-gray-600 dark:text-gray-400 mt-2" id="dash-subtitle">Manage system reports and user activity.</p>
+  </div>
+  <div id="dashboard-content"></div>
 </div>
 
 </main>
@@ -364,122 +409,163 @@
   </div>
 </footer>
 
-<!-- Ask StarTeam Chat Widget (Gemini / RAG Integration) -->
-<div id="chat-widget-container" class="fixed bottom-6 right-6 z-[2000] flex flex-col items-end pointer-events-none">
-  <!-- Chat Panel -->
-  <div id="chat-widget" class="hidden w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-sm shadow-heavy border border-gray-200 dark:border-gray-700 mb-4 flex flex-col overflow-hidden pointer-events-auto transition-transform">
-    <div class="bg-metroblue-600 p-3 text-white flex justify-between items-center shadow-sm">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-[18px]">smart_toy</span>
-        <span class="font-bold text-sm tracking-wider uppercase">Ask StarTeam AI</span>
+<!-- Auth (Login/Register) Modal -->
+<div id="login-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-sm shadow-heavy border-t-4 border-metrored-500 p-6 mx-4 relative">
+    <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    
+    <div class="text-center mb-4 mt-2">
+      <div class="w-12 h-12 bg-metroblue-100 dark:bg-metroblue-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <span class="material-symbols-outlined text-2xl text-metroblue-600 dark:text-metroblue-400" id="auth-header-icon">lock</span>
       </div>
-      <button onclick="toggleChat()" class="hover:text-gray-200 transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button>
+      <h2 id="auth-title" class="text-2xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Portal Access</h2>
+      <p id="auth-subtitle" class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1">Sign in to your account</p>
     </div>
-    <div id="chat-messages" class="flex-1 h-72 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-900 flex flex-col text-sm space-y-3">
-      <div class="text-center text-[10px] text-gray-500 font-bold uppercase tracking-widest border-b border-gray-200 dark:border-gray-700 pb-2 mb-2">Secure Link Established</div>
-      <div class="text-left font-medium">
-         <span class="inline-block p-2.5 rounded-sm bg-blue-50 dark:bg-gray-800 text-metroblue-600 dark:text-metroblue-400 border border-blue-100 dark:border-gray-700 shadow-sm leading-relaxed">
-            Hello! I am your StarTeam AI assistant. I continuously read your screen context via RAG. How can I assist with your journey?
-         </span>
+
+    <!-- Inline Error Message -->
+    <div id="auth-error" class="hidden mb-4 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold rounded-sm text-center uppercase tracking-widest"></div>
+    <!-- Inline Success Message -->
+    <div id="auth-success" class="hidden mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-xs font-bold rounded-sm text-center uppercase tracking-widest"></div>
+
+    <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+      <div>
+        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Username</label>
+        <input type="text" id="auth-username" required class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors" placeholder="Enter username">
       </div>
-    </div>
-    <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col gap-2">
-      <div id="chat-typing" class="hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1 animate-pulse">Gemini is typing...</div>
-      <div class="flex items-center gap-2">
-        <input type="text" id="chat-input" onkeypress="handleChatInput(event)" placeholder="Ask about delays, conditions..." class="w-full text-sm bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2.5 focus:outline-none focus:border-metroblue-500 text-gray-900 dark:text-white transition-colors">
-        <button onclick="submitChat()" class="bg-metroblue-600 hover:bg-metroblue-500 text-white p-2 rounded-sm transition-colors focus:outline-none focus:ring-2 focus:ring-metroblue-500 flex-shrink-0">
-          <span class="material-symbols-outlined text-[18px]">send</span>
-        </button>
+      <div>
+        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Password</label>
+        <input type="password" id="auth-password" required class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors" placeholder="••••••••">
       </div>
+      <!-- Confirm Password (Hidden in Login Mode) -->
+      <div id="auth-confirm-container" class="hidden">
+        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Confirm Password</label>
+        <input type="password" id="auth-confirm" class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors" placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="auth-submit-btn" class="w-full mt-6 py-3 rounded-sm bg-metroblue-600 hover:bg-metroblue-700 text-white font-bold text-sm uppercase tracking-widest transition-colors focus:outline-none focus:ring-4 focus:ring-metroblue-500/30">
+        Sign In
+      </button>
+    </form>
+    
+    <div class="mt-4 text-center border-t border-gray-100 dark:border-gray-700 pt-4">
+      <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+        <span id="auth-toggle-text">Don't have an account?</span> 
+        <button onclick="toggleAuthMode()" id="auth-toggle-link" class="text-metrored-600 dark:text-metrored-400 font-bold hover:underline focus:outline-none ml-1 uppercase tracking-widest">Register</button>
+      </p>
     </div>
   </div>
-  <!-- Toggle Button -->
-  <button onclick="toggleChat()" class="pointer-events-auto w-14 h-14 bg-metroblue-600 hover:bg-metroblue-500 text-white rounded-full shadow-heavy flex items-center justify-center focus:outline-none transition-transform hover:scale-105 active:scale-95 border-2 border-white dark:border-gray-800">
-    <span class="material-symbols-outlined text-[28px]">chat</span>
-  </button>
+</div>
+
+<!-- Logout Modal -->
+<div id="logout-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-sm shadow-heavy border-t-4 border-metrored-500 p-6 mx-4 relative">
+    <button onclick="closeLogoutModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    
+    <div class="text-center mb-6 mt-2">
+      <div class="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <span class="material-symbols-outlined text-2xl text-metrored-600 dark:text-metrored-400">logout</span>
+      </div>
+      <h2 class="text-xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Sign Out</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 font-bold mt-2">Do you wanna sign out?</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="closeLogoutModal()" class="flex-1 py-2.5 rounded-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none">
+        Cancel
+      </button>
+      <button onclick="confirmLogout()" class="flex-1 py-2.5 rounded-sm bg-metrored-500 hover:bg-metrored-600 text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none shadow-sm">
+        Yes, Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-sm shadow-heavy border-t-4 border-metroblue-500 p-6 mx-4 relative">
+    <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    
+    <div class="text-center mb-4 mt-2">
+      <!-- Profile Picture Upload Area -->
+      <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2 relative group cursor-pointer overflow-hidden border-2 border-metroblue-500 shadow-sm" onclick="document.getElementById('profile-pic-upload').click()" title="Change Profile Picture">
+        <img id="settings-profile-preview" src="" class="w-full h-full object-cover hidden" alt="Profile">
+        <span id="settings-profile-icon" class="material-symbols-outlined text-3xl text-gray-400 absolute">manage_accounts</span>
+        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-white text-xl">photo_camera</span>
+        </div>
+      </div>
+      <input type="file" id="profile-pic-upload" accept="image/*" class="hidden" onchange="handleProfilePicUpload(event)">
+      <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Click to upload avatar</p>
+
+      <h2 class="text-2xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Account Settings</h2>
+      <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-1" id="settings-username-display">User Profile</p>
+    </div>
+
+    <!-- Inline Messages -->
+    <div id="settings-error" class="hidden mb-4 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold rounded-sm text-center uppercase tracking-widest"></div>
+    <div id="settings-success" class="hidden mb-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-xs font-bold rounded-sm text-center uppercase tracking-widest"></div>
+
+    <form id="settings-form" onsubmit="handleChangePassword(event)" class="space-y-4 border-b border-gray-100 dark:border-gray-700 pb-6 mb-6">
+      <h3 class="text-sm font-bold text-metroblue-800 dark:text-white uppercase tracking-wider mb-2">Change Password</h3>
+      <div>
+        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">New Password</label>
+        <input type="password" id="settings-new-password" required class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors" placeholder="••••••••">
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Confirm New Password</label>
+        <input type="password" id="settings-confirm-password" required class="w-full bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-sm px-3 py-2 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-metroblue-500 transition-colors" placeholder="••••••••">
+      </div>
+      <button type="submit" class="w-full mt-2 py-2.5 rounded-sm bg-metroblue-600 hover:bg-metroblue-700 text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none shadow-sm">
+        Update Password
+      </button>
+    </form>
+
+    <!-- Danger Zone -->
+    <div>
+      <h3 class="text-sm font-bold text-metrored-600 dark:text-metrored-400 uppercase tracking-wider mb-2">Danger Zone</h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+      <button onclick="openDeleteAccountModal()" type="button" class="w-full py-2.5 rounded-sm bg-red-100 dark:bg-red-900/30 text-metrored-600 dark:text-metrored-400 border border-red-200 dark:border-red-800 hover:bg-metrored-500 hover:text-white dark:hover:bg-metrored-500 dark:hover:text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none shadow-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[16px]">delete_forever</span> Delete Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div id="delete-account-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-sm shadow-heavy border-t-4 border-metrored-500 p-6 mx-4 relative">
+     <div class="text-center mb-6 mt-2">
+      <div class="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <span class="material-symbols-outlined text-2xl text-metrored-600 dark:text-metrored-400">warning</span>
+      </div>
+      <h2 class="text-xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Delete Account</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 font-bold mt-2">This action is permanent and will wipe all your saved data. Are you sure?</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="closeDeleteAccountModal()" class="flex-1 py-2.5 rounded-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none">
+        Cancel
+      </button>
+      <button onclick="confirmDeleteAccount()" class="flex-1 py-2.5 rounded-sm bg-metrored-500 hover:bg-metrored-600 text-white font-bold text-xs uppercase tracking-widest transition-colors focus:outline-none shadow-sm">
+        Yes, Delete
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
 // --- INITIALIZATION & THEME LOGIC ---
 let isDarkMode = false;
-let isAudioMode = false;
-let isChatOpen = false;
-
-function toggleAudioMode() {
-  isAudioMode = !isAudioMode;
-  const icon = document.getElementById('audio-icon');
-  if (isAudioMode) {
-      icon.textContent = 'volume_up';
-      icon.classList.add('text-metrored-500');
-      const msg = new SpeechSynthesisUtterance("Audio announcements activated. I will read live predictions aloud.");
-      window.speechSynthesis.speak(msg);
-  } else {
-      icon.textContent = 'volume_off';
-      icon.classList.remove('text-metrored-500');
-      window.speechSynthesis.cancel();
-  }
-}
-
-// --- CHAT WIDGET LOGIC ---
-function toggleChat() {
-  const chatBox = document.getElementById('chat-widget');
-  isChatOpen = !isChatOpen;
-  chatBox.classList.toggle('hidden', !isChatOpen);
-  if (isChatOpen) document.getElementById('chat-input').focus();
-}
-
-function submitChat() {
-    const inputEl = document.getElementById('chat-input');
-    const input = inputEl.value;
-    if(!input.trim()) return;
-    addChatMessage('user', input);
-    inputEl.value = '';
-    
-    document.getElementById('chat-typing').classList.remove('hidden');
-    setTimeout(() => simulateGeminiRAG(input), 1200);
-}
-
-function handleChatInput(e) {
-    if(e.key === 'Enter') submitChat();
-}
-
-function addChatMessage(sender, text) {
-    const msgs = document.getElementById('chat-messages');
-    const div = document.createElement('div');
-    if (sender === 'user') {
-        div.className = 'text-right font-medium self-end max-w-[85%]';
-        div.innerHTML = `<span class="inline-block p-2.5 rounded-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm leading-relaxed">${text}</span>`;
-    } else {
-        div.className = 'text-left font-medium max-w-[85%]';
-        div.innerHTML = `<span class="inline-block p-2.5 rounded-sm bg-blue-50 dark:bg-gray-800 text-metroblue-600 dark:text-metroblue-400 border border-blue-100 dark:border-gray-700 shadow-sm leading-relaxed">${text}</span>`;
-    }
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-}
-
-function simulateGeminiRAG(query) {
-    document.getElementById('chat-typing').classList.add('hidden');
-    const stopName = document.getElementById("p_global_stop")?.value || "No station selected";
-    const cond = getSystemConditions();
-    
-    // Simulate RAG Context ingestion
-    let context = `Context - Station: ${stopName}, Weather: ${cond.weather}, Traffic: ${cond.traffic}.`;
-    
-    const qLower = query.toLowerCase();
-    let reply = `Based on your current dashboard view, `;
-    
-    if (qLower.includes('delay') || qLower.includes('late')) {
-        reply += `I see the network is experiencing ${cond.traffic} traffic and ${cond.weather} conditions. Delays are actively reflected in the live tracker above.`;
-    } else if (qLower.includes('snow') || qLower.includes('weather')) {
-        reply += `Current sensors report ${cond.weather}. You should see our ambient environmental systems reflecting this visually on your screen.`;
-    } else if (qLower.includes('station') || qLower.includes('stop')) {
-        reply += `you are currently looking at data for **${stopName}**. To change this, use the 'Select Station' dropdown in the top left panel.`;
-    } else {
-        reply += `I have ingested your active state (${context}). I can analyze crowds, route viability, or delays. What specific metric do you need?`;
-    }
-    
-    addChatMessage('bot', reply);
-}
+let currentUser = JSON.parse(localStorage.getItem('sivas_user') || 'null');
+let registeredUsers = JSON.parse(localStorage.getItem('sivas_users') || '{}');
+let appReports = JSON.parse(localStorage.getItem('sivas_reports') || '[]');
+let closedStations = JSON.parse(localStorage.getItem('sivas_closed_stations') || '[]');
 
 function toggleTheme() {
   const html = document.documentElement;
@@ -497,9 +583,7 @@ function toggleTheme() {
     isDarkMode = true;
   }
   
-  if (window.liveMap) {
-      updateMapTheme();
-  }
+  if (window.liveMap) updateMapTheme();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -517,7 +601,551 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateClock, 1000);
   updateClock();
   populateLiveTimesStops();
+  renderFavorites();
+  initServiceAlerts();
+  
+  // Initialize Auth UI
+  updateAuthUI();
 });
+
+function initServiceAlerts() {
+  let alerts = [];
+  if (closedStations.length > 0) {
+     alerts.push(`<span class="text-metrored-500 dark:text-metrored-400 font-black">EMERGENCY DETOUR:</span> STATIONS CLOSED DUE TO INCIDENTS: ${closedStations.join(', ')}`);
+  }
+  alerts.push(
+    "L02 Line is currently experiencing minor delays due to roadwork near Hastane.",
+    "Expect heavy ridership across all lines between 17:00 and 19:00 today.",
+    "New 12-meter buses have been deployed on L01 to reduce overcrowding.",
+    "Weather Advisory: Potential snow this evening. Allow extra travel time."
+  );
+  
+  const tickerStr = alerts.join(" &nbsp; • &nbsp; ");
+  // Duplicate for smooth infinite scroll
+  document.getElementById('alert-ticker').innerHTML = tickerStr + " &nbsp; • &nbsp; " + tickerStr;
+}
+
+// --- AUTHENTICATION LOGIC ---
+let isLoginMode = true;
+
+function toggleAuth() {
+  if (currentUser) {
+    document.getElementById('logout-modal').classList.remove('hidden');
+    document.getElementById('logout-modal').classList.add('flex');
+  } else {
+    setAuthMode(true); // Always open in Login mode by default
+    document.getElementById('login-modal').classList.remove('hidden');
+    document.getElementById('login-modal').classList.add('flex');
+    document.getElementById('auth-username').focus();
+  }
+}
+
+function closeLogoutModal() {
+  document.getElementById('logout-modal').classList.add('hidden');
+  document.getElementById('logout-modal').classList.remove('flex');
+}
+
+function confirmLogout() {
+  currentUser = null;
+  localStorage.removeItem('sivas_user');
+  updateAuthUI();
+  closeLogoutModal();
+}
+
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.add('hidden');
+  document.getElementById('login-modal').classList.remove('flex');
+  document.getElementById('auth-form').reset();
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-success').classList.add('hidden');
+}
+
+function setAuthMode(isLogin) {
+  isLoginMode = isLogin;
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-success').classList.add('hidden');
+  document.getElementById('auth-form').reset();
+  
+  const title = document.getElementById('auth-title');
+  const subtitle = document.getElementById('auth-subtitle');
+  const confirmContainer = document.getElementById('auth-confirm-container');
+  const confirmInput = document.getElementById('auth-confirm');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const toggleText = document.getElementById('auth-toggle-text');
+  const toggleLink = document.getElementById('auth-toggle-link');
+  const headerIcon = document.getElementById('auth-header-icon');
+  const headerIconContainer = headerIcon.parentElement;
+
+  if (isLogin) {
+    title.textContent = "Portal Access";
+    subtitle.textContent = "Sign in to your account";
+    headerIcon.textContent = "lock";
+    headerIconContainer.className = "w-12 h-12 bg-metroblue-100 dark:bg-metroblue-900/50 rounded-full flex items-center justify-center mx-auto mb-3";
+    headerIcon.className = "material-symbols-outlined text-2xl text-metroblue-600 dark:text-metroblue-400";
+    confirmContainer.classList.add('hidden');
+    confirmInput.removeAttribute('required');
+    submitBtn.textContent = "Sign In";
+    submitBtn.className = "w-full mt-6 py-3 rounded-sm bg-metroblue-600 hover:bg-metroblue-700 text-white font-bold text-sm uppercase tracking-widest transition-colors focus:outline-none focus:ring-4 focus:ring-metroblue-500/30";
+    toggleText.textContent = "Don't have an account?";
+    toggleLink.textContent = "Register";
+    toggleLink.className = "text-metrored-600 dark:text-metrored-400 font-bold hover:underline focus:outline-none ml-1 uppercase tracking-widest";
+  } else {
+    title.textContent = "Create Account";
+    subtitle.textContent = "Register to access the portal";
+    headerIcon.textContent = "person_add";
+    headerIconContainer.className = "w-12 h-12 bg-metrored-100 dark:bg-metrored-900/50 rounded-full flex items-center justify-center mx-auto mb-3";
+    headerIcon.className = "material-symbols-outlined text-2xl text-metrored-600 dark:text-metrored-400";
+    confirmContainer.classList.remove('hidden');
+    confirmInput.setAttribute('required', 'true');
+    submitBtn.textContent = "Register";
+    submitBtn.className = "w-full mt-6 py-3 rounded-sm bg-metrored-500 hover:bg-metrored-600 text-white font-bold text-sm uppercase tracking-widest transition-colors focus:outline-none focus:ring-4 focus:ring-metrored-500/30";
+    toggleText.textContent = "Already have an account?";
+    toggleLink.textContent = "Sign In";
+    toggleLink.className = "text-metroblue-600 dark:text-metroblue-400 font-bold hover:underline focus:outline-none ml-1 uppercase tracking-widest";
+  }
+}
+
+function toggleAuthMode() {
+  setAuthMode(!isLoginMode);
+}
+
+function showAuthError(msg) {
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = msg;
+  errEl.classList.remove('hidden');
+  document.getElementById('auth-success').classList.add('hidden');
+}
+
+function showAuthSuccess(msg) {
+  const succEl = document.getElementById('auth-success');
+  succEl.textContent = msg;
+  succEl.classList.remove('hidden');
+  document.getElementById('auth-error').classList.add('hidden');
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  
+  // If the username starts with "ADMIN " (case-insensitive), assign the admin role
+  const role = username.toUpperCase().startsWith('ADMIN ') ? 'admin' : 'user';
+
+  if (isLoginMode) {
+    if (!registeredUsers[username]) {
+      return showAuthError("User not found. Please register first.");
+    }
+    if (registeredUsers[username].password !== password) {
+      return showAuthError("Incorrect password.");
+    }
+    
+    // Successfully logged in!
+    currentUser = { username, role: registeredUsers[username].role };
+    localStorage.setItem('sivas_user', JSON.stringify(currentUser));
+    
+    closeLoginModal();
+    updateAuthUI();
+    
+  } else {
+    // Register Mode checks
+    const confirmPass = document.getElementById('auth-confirm').value;
+    if (password !== confirmPass) {
+      return showAuthError("Passwords do not match.");
+    }
+    if (registeredUsers[username]) {
+      return showAuthError("Username already exists. Please log in.");
+    }
+    
+    // Save new user profile
+    registeredUsers[username] = { password: password, role: role, favorites: [] };
+    localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
+    
+    // Switch to Login Mode, display success message, and prepare fields
+    setAuthMode(true);
+    document.getElementById('auth-username').value = username;
+    document.getElementById('auth-password').value = ''; 
+    showAuthSuccess("Account created successfully! Please sign in.");
+  }
+}
+
+function updateAuthUI() {
+  const btnText = document.getElementById('auth-text');
+  const btnIcon = document.getElementById('auth-icon');
+  const btn = document.getElementById('auth-btn');
+  const favBtn = document.getElementById('btn-toggle-fav');
+  const settingsBtn = document.getElementById('settings-btn');
+  
+  if (currentUser) {
+    let badge = '';
+    let displayName = currentUser.username;
+    const userProfile = registeredUsers[currentUser.username];
+    
+    if (currentUser.role === 'admin') {
+      // Clean up the display name (e.g. turn "ADMIN Bora" into "Bora")
+      if (displayName.toUpperCase().startsWith('ADMIN ')) {
+        displayName = displayName.substring(6);
+      }
+      badge = `<span class="bg-amber-500 text-white px-1.5 py-0.5 rounded-sm text-[9px] ml-2 hidden sm:inline-block tracking-widest shadow-sm">ADMIN</span>`;
+      btn.className = "flex items-center px-3 sm:px-4 py-1.5 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-sm transition-colors shadow-sm";
+    } else {
+      btn.className = "flex items-center px-3 sm:px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-sm transition-colors shadow-sm";
+    }
+    
+    // Check for profile picture
+    if (userProfile && userProfile.profilePic) {
+      btnIcon.className = "flex items-center justify-center w-5 h-5 mr-1";
+      btnIcon.innerHTML = `<img src="${userProfile.profilePic}" class="w-full h-full rounded-full object-cover border border-white/40 shadow-sm" alt="Avatar">`;
+    } else {
+      btnIcon.className = "material-symbols-outlined text-[18px]";
+      btnIcon.innerHTML = "person";
+    }
+    
+    btnText.innerHTML = `<span class="hidden sm:inline">${displayName}</span>${badge}`;
+    btnText.classList.remove('hidden');
+
+    if (favBtn) {
+        favBtn.classList.remove('hidden');
+        favBtn.classList.add('flex');
+    }
+    if (settingsBtn) {
+        settingsBtn.classList.remove('hidden');
+        settingsBtn.classList.add('flex');
+    }
+  } else {
+    btn.className = "flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-metroblue-600 hover:bg-metroblue-700 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-sm transition-colors border border-metroblue-800 shadow-sm";
+    btnIcon.className = "material-symbols-outlined text-[18px]";
+    btnIcon.innerHTML = 'login';
+    btnText.textContent = 'Login';
+    btnText.className = 'hidden sm:inline';
+    
+    if (favBtn) {
+        favBtn.classList.add('hidden');
+        favBtn.classList.remove('flex');
+    }
+    if (settingsBtn) {
+        settingsBtn.classList.add('hidden');
+        settingsBtn.classList.remove('flex');
+    }
+  }
+  
+  // Update Dashboard Navigation Visibility
+  const navDash = document.getElementById('nav-dashboard');
+  const navDashMobile = document.getElementById('nav-dashboard-mobile');
+  if (currentUser) {
+    navDash.classList.remove('hidden'); navDash.classList.add('flex');
+    navDashMobile.classList.remove('hidden'); navDashMobile.classList.add('flex');
+    navDash.textContent = currentUser.role === 'admin' ? 'Admin Panel' : 'Report Issue';
+    navDashMobile.textContent = currentUser.role === 'admin' ? 'Admin' : 'Report';
+    if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+  } else {
+    navDash.classList.add('hidden'); navDash.classList.remove('flex');
+    navDashMobile.classList.add('hidden'); navDashMobile.classList.remove('flex');
+    if (document.getElementById('page-dashboard').classList.contains('active')) switchTab('predictor');
+  }
+
+  renderFavorites();
+}
+
+// --- COMMUNITY & DASHBOARD LOGIC ---
+function renderDashboard() {
+  const content = document.getElementById('dashboard-content');
+  if (!currentUser) return;
+
+  if (currentUser.role === 'admin') {
+    document.getElementById('dash-title').textContent = "Admin Control Panel";
+    document.getElementById('dash-subtitle').textContent = "Manage user accounts and verify reported incidents to adjust routing.";
+    
+    let usersHtml = Object.keys(registeredUsers).map(u => `
+      <div class="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700">
+        <span class="font-bold text-sm text-metroblue-900 dark:text-white">${u}</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm ${registeredUsers[u].role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}">${registeredUsers[u].role}</span>
+      </div>
+    `).join('');
+
+    let pendingReports = appReports.filter(r => r.status === 'pending');
+    let reportsHtml = pendingReports.length === 0 ? `<p class="p-4 text-sm text-gray-500 font-bold uppercase tracking-widest">No pending reports.</p>` : pendingReports.map(r => `
+      <div class="p-4 border border-red-200 bg-red-50 dark:bg-red-900/10 rounded-sm mb-3">
+        <div class="text-xs font-bold text-metrored-600 mb-1 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">warning</span> STATION: ${r.station}</div>
+        <div class="text-sm text-gray-800 dark:text-gray-200 mb-3 font-medium">"${r.desc}"</div>
+        <div class="flex justify-between items-center mt-2 pt-3 border-t border-red-200/50">
+           <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">By: ${r.reporter}</span>
+           <div class="flex gap-2">
+             <button onclick="resolveReport('${r.id}', 'rejected')" class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-bold rounded-sm uppercase tracking-wider transition-colors shadow-sm">Reject</button>
+             <button onclick="resolveReport('${r.id}', 'verified')" class="px-3 py-1.5 bg-metrored-500 hover:bg-metrored-600 text-white text-xs font-bold rounded-sm uppercase tracking-wider transition-colors shadow-sm">Verify & Detour</button>
+           </div>
+        </div>
+      </div>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-gray-800 rounded-sm p-6 shadow-solid border border-gray-200 dark:border-gray-700">
+           <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase mb-4 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2"><span class="material-symbols-outlined">group</span> Registered Users</h2>
+           <div class="overflow-y-auto max-h-[500px] pr-2">${usersHtml}</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-sm p-6 shadow-solid border border-gray-200 dark:border-gray-700 border-t-4 border-t-metrored-500">
+           <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase mb-4 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2"><span class="material-symbols-outlined text-metrored-500">gavel</span> Incident Queue</h2>
+           <div class="overflow-y-auto max-h-[500px] pr-2">${reportsHtml}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    document.getElementById('dash-title').textContent = "Community Reports";
+    document.getElementById('dash-subtitle').textContent = "Report accidents or delays to help optimize the network for everyone.";
+    
+    let userReports = appReports.filter(r => r.reporter === currentUser.username);
+    let myReportsHtml = userReports.length === 0 ? `<p class="p-4 text-sm text-gray-500 font-bold uppercase tracking-widest">You haven't reported anything.</p>` : userReports.map(r => `
+       <div class="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700">
+         <div class="flex-1 pr-4">
+            <div class="font-bold text-sm text-metroblue-900 dark:text-white uppercase tracking-wider">${r.station}</div>
+            <div class="text-[10px] text-gray-500 uppercase truncate mt-0.5" title="${r.desc}">${r.desc}</div>
+         </div>
+         <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm whitespace-nowrap ${r.status === 'verified' ? 'bg-metrored-100 text-metrored-700 dark:bg-metrored-900/30 dark:text-metrored-400' : (r.status === 'rejected' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400')}">${r.status}</span>
+       </div>
+    `).join('');
+
+    let allStops = Array.from(new Set(Object.values(DATA.stopsByLine).flat())).sort();
+    let stopOptions = allStops.map(s => `<option value="${s}">${s}</option>`).join('');
+
+    content.innerHTML = `
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-gray-800 rounded-sm p-6 shadow-solid border border-gray-200 dark:border-gray-700 border-t-4 border-t-metrored-500">
+           <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2"><span class="material-symbols-outlined text-metrored-500">campaign</span> Report an Issue</h2>
+           <div class="space-y-5">
+             <div>
+               <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Station / Location</label>
+               <select id="report-station" class="w-full bg-gray-50 border-2 border-gray-300 rounded-sm px-3 py-2.5 text-sm font-bold focus:outline-none focus:border-metrored-500 transition-colors cursor-pointer dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                 ${stopOptions}
+               </select>
+             </div>
+             <div>
+               <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Description</label>
+               <textarea id="report-desc" rows="3" class="w-full bg-gray-50 border-2 border-gray-300 rounded-sm px-3 py-2.5 text-sm font-bold focus:outline-none focus:border-metrored-500 transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-white" placeholder="E.g., Major accident blocking the station approach..."></textarea>
+             </div>
+             <button onclick="submitReport()" class="w-full py-3.5 rounded-sm bg-metrored-500 hover:bg-metrored-600 text-white font-bold text-sm uppercase tracking-widest transition-colors shadow-sm focus:outline-none focus:ring-4 focus:ring-metrored-500/30">Submit Report</button>
+           </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-sm p-6 shadow-solid border border-gray-200 dark:border-gray-700">
+           <h2 class="text-lg font-bold text-metroblue-800 dark:text-white uppercase mb-4 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2"><span class="material-symbols-outlined text-metroblue-500">history</span> My Reports</h2>
+           <div class="overflow-y-auto max-h-[400px]">${myReportsHtml}</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function submitReport() {
+   const station = document.getElementById('report-station').value;
+   const desc = document.getElementById('report-desc').value.trim();
+   if(!desc) { alert("Please describe the issue."); return; }
+   
+   appReports.unshift({
+      id: Date.now().toString(),
+      reporter: currentUser.username,
+      station: station,
+      desc: desc,
+      status: 'pending'
+   });
+   localStorage.setItem('sivas_reports', JSON.stringify(appReports));
+   renderDashboard();
+}
+
+function resolveReport(id, status) {
+   const rep = appReports.find(r => r.id === id);
+   if(rep) {
+      rep.status = status;
+      if(status === 'verified') {
+         if(!closedStations.includes(rep.station)) {
+             closedStations.push(rep.station);
+             localStorage.setItem('sivas_closed_stations', JSON.stringify(closedStations));
+             initServiceAlerts(); // Refresh banner immediately
+         }
+      }
+      localStorage.setItem('sivas_reports', JSON.stringify(appReports));
+      renderDashboard();
+   }
+}
+
+// --- SETTINGS LOGIC ---
+function showSettingsError(msg) {
+  const err = document.getElementById('settings-error');
+  err.textContent = msg;
+  err.classList.remove('hidden');
+  document.getElementById('settings-success').classList.add('hidden');
+}
+
+function showSettingsSuccess(msg) {
+  const succ = document.getElementById('settings-success');
+  succ.textContent = msg;
+  succ.classList.remove('hidden');
+  document.getElementById('settings-error').classList.add('hidden');
+}
+
+function handleProfilePicUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Enforce a 1MB limit for localStorage safety
+  if (file.size > 1024 * 1024) {
+    showSettingsError("Image size must be less than 1MB.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const base64Str = event.target.result;
+    
+    document.getElementById('settings-profile-preview').src = base64Str;
+    document.getElementById('settings-profile-preview').classList.remove('hidden');
+    document.getElementById('settings-profile-icon').classList.add('hidden');
+    
+    registeredUsers[currentUser.username].profilePic = base64Str;
+    localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
+    
+    updateAuthUI();
+    showSettingsSuccess("Profile picture updated!");
+  };
+  reader.readAsDataURL(file);
+}
+
+function openSettingsModal() {
+  if (!currentUser) return;
+  document.getElementById('settings-username-display').textContent = `Profile: ${currentUser.username}`;
+  document.getElementById('settings-form').reset();
+  
+  const userProfile = registeredUsers[currentUser.username];
+  if (userProfile && userProfile.profilePic) {
+    document.getElementById('settings-profile-preview').src = userProfile.profilePic;
+    document.getElementById('settings-profile-preview').classList.remove('hidden');
+    document.getElementById('settings-profile-icon').classList.add('hidden');
+  } else {
+    document.getElementById('settings-profile-preview').src = '';
+    document.getElementById('settings-profile-preview').classList.add('hidden');
+    document.getElementById('settings-profile-icon').classList.remove('hidden');
+  }
+
+  document.getElementById('settings-error').classList.add('hidden');
+  document.getElementById('settings-success').classList.add('hidden');
+  document.getElementById('settings-modal').classList.remove('hidden');
+  document.getElementById('settings-modal').classList.add('flex');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').classList.add('hidden');
+  document.getElementById('settings-modal').classList.remove('flex');
+}
+
+function handleChangePassword(e) {
+  e.preventDefault();
+  const newPass = document.getElementById('settings-new-password').value;
+  const confirmPass = document.getElementById('settings-confirm-password').value;
+
+  if (newPass !== confirmPass) {
+    showSettingsError("Passwords do not match.");
+    return;
+  }
+
+  // Update password
+  registeredUsers[currentUser.username].password = newPass;
+  localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
+  
+  showSettingsSuccess("Password updated successfully.");
+  document.getElementById('settings-form').reset();
+}
+
+function openDeleteAccountModal() {
+  document.getElementById('delete-account-modal').classList.remove('hidden');
+  document.getElementById('delete-account-modal').classList.add('flex');
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('delete-account-modal').classList.add('hidden');
+  document.getElementById('delete-account-modal').classList.remove('flex');
+}
+
+function confirmDeleteAccount() {
+  // Remove user from database
+  delete registeredUsers[currentUser.username];
+  localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
+  
+  // Log out
+  currentUser = null;
+  localStorage.removeItem('sivas_user');
+  
+  closeDeleteAccountModal();
+  closeSettingsModal();
+  updateAuthUI();
+}
+
+// --- NEW FEATURE: FAVORITES LOGIC ---
+function renderFavorites() {
+  const container = document.getElementById('favorites-section');
+  const list = document.getElementById('favorites-list');
+  
+  let userFavs = (currentUser && registeredUsers[currentUser.username]?.favorites) ? registeredUsers[currentUser.username].favorites : [];
+  
+  if (!currentUser || userFavs.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+  
+  container.classList.remove('hidden');
+  list.innerHTML = userFavs.map(station => `
+    <button onclick="setGlobalStopAndSearch('${station}')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-sm text-xs font-bold text-metroblue-800 dark:text-white transition-colors flex items-center gap-1.5 shadow-sm">
+      <span class="material-symbols-outlined text-[12px] text-amber-500">star</span> ${station}
+    </button>
+  `).join('');
+  
+  updateFavoriteBtnState();
+}
+
+function toggleFavorite() {
+  const select = document.getElementById('p_global_stop');
+  const station = select.value;
+  if (!station || !currentUser) return;
+  
+  if (!registeredUsers[currentUser.username].favorites) {
+    registeredUsers[currentUser.username].favorites = [];
+  }
+  
+  let userFavs = registeredUsers[currentUser.username].favorites;
+  
+  if (userFavs.includes(station)) {
+    userFavs = userFavs.filter(s => s !== station);
+  } else {
+    userFavs.push(station);
+  }
+  
+  registeredUsers[currentUser.username].favorites = userFavs;
+  localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
+  
+  renderFavorites();
+  updateFavoriteBtnState();
+}
+
+function updateFavoriteBtnState() {
+  const station = document.getElementById('p_global_stop').value;
+  const icon = document.getElementById('fav-icon');
+  const btn = document.getElementById('btn-toggle-fav');
+  
+  let userFavs = (currentUser && registeredUsers[currentUser.username]?.favorites) ? registeredUsers[currentUser.username].favorites : [];
+  
+  if (station && userFavs.includes(station)) {
+    icon.className = "material-symbols-outlined text-[24px] text-amber-500";
+    icon.style.fontVariationSettings = '"FILL" 1';
+    btn.classList.add('border-amber-400');
+  } else {
+    icon.className = "material-symbols-outlined text-[24px]";
+    icon.style.fontVariationSettings = '"FILL" 0';
+    btn.classList.remove('border-amber-400');
+  }
+}
+
+function setGlobalStopAndSearch(station) {
+  document.getElementById('p_global_stop').value = station;
+  updateFavoriteBtnState();
+  runPredictor();
+}
 
 function populateLiveTimesStops() {
   const allStops = new Set();
@@ -544,28 +1172,37 @@ function switchTab(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById("page-" + name).classList.add("active");
   
-  // Desktop Nav Reset
   document.querySelectorAll(".nav-item").forEach(n => {
-    n.className = "nav-item h-full px-4 flex items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors";
+    const isHidden = n.classList.contains("hidden");
+    n.className = `nav-item h-full px-4 flex items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors ${isHidden ? 'hidden' : ''}`;
   });
   
   const activeNav = document.getElementById("nav-" + name);
-  activeNav.className = "nav-item h-full px-4 flex items-center gap-2 border-b-4 border-metrored-500 text-metroblue-600 dark:text-white transition-colors";
+  if(activeNav) {
+      const isHiddenActive = activeNav.classList.contains("hidden");
+      activeNav.className = `nav-item h-full px-4 flex items-center gap-2 border-b-4 border-metrored-500 text-metroblue-600 dark:text-white transition-colors ${isHiddenActive ? 'hidden' : ''}`;
+  }
 
-  // Mobile Nav Reset
   document.querySelectorAll(".nav-item-mobile").forEach(n => {
-    n.className = "nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors";
+    const isHiddenMobile = n.classList.contains("hidden");
+    n.className = `nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors ${isHiddenMobile ? 'hidden' : ''}`;
   });
   
   const activeNavMobile = document.getElementById("nav-" + name + "-mobile");
-  activeNavMobile.className = "nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-metroblue-600 dark:text-white border-b-4 border-metrored-500 transition-colors";
+  if(activeNavMobile) {
+      const isHiddenActiveMobile = activeNavMobile.classList.contains("hidden");
+      activeNavMobile.className = `nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-metroblue-600 dark:text-white border-b-4 border-metrored-500 transition-colors ${isHiddenActiveMobile ? 'hidden' : ''}`;
+  }
 
   if (name === 'map') {
       initMapIfNeeded();
   }
+  if (name === 'dashboard') {
+      renderDashboard();
+  }
 }
 
-// --- MAP & ROUTE PLANNER ENGINE (WITH OSRM REAL ROAD ROUTING) ---
+// --- MAP & ROUTE PLANNER ENGINE ---
 window.liveMap = null;
 let mapTileLayer = null;
 let routeLayerGroup = L.layerGroup();
@@ -580,7 +1217,6 @@ window.userOriginLatLng = null;
 window.userDestLatLng = null;
 window.userPins = { origin: null, dest: null };
 window.isFetchingCoords = false;
-window.clickMode = 'origin';
 
 window.setPinFromMap = function(type, lat, lng) {
     if (type === 'origin') {
@@ -600,7 +1236,6 @@ window.clearMapSelection = function() {
     document.getElementById('m_to').value = "";
     document.getElementById('map_itinerary').classList.add('hidden');
     window.activeRouteMeta = null;
-    setClickMode('origin');
     loadLiveMap(null);
 };
 
@@ -612,6 +1247,65 @@ const LINE_WAYPOINTS = {
     'L04': [[36.995, 39.765], [37.005, 39.758], [37.016, 39.750]],
     'L05': [[37.016, 39.750], [37.045, 39.740], [37.065, 39.705]]
 };
+
+// --- NEW FEATURE: GEOLOCATION / LOCATE ME ---
+function locateUserGPS() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  // Visual loading state
+  const mapContainer = document.getElementById('live-map');
+  const toast = document.createElement('div');
+  toast.id = 'gps-toast';
+  toast.className = 'absolute top-6 left-1/2 -translate-x-1/2 z-[2000] bg-metroblue-900 text-white px-5 py-3 rounded-sm text-xs font-bold uppercase tracking-wider shadow-heavy flex items-center gap-2';
+  toast.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">my_location</span> Locating You...`;
+  mapContainer.appendChild(toast);
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      let lat = position.coords.latitude;
+      let lng = position.coords.longitude;
+      
+      // Safety Check: Sivas is roughly around 39.750, 37.016.
+      // If the user is very far away (e.g. testing from US or Istanbul), we snap to Sivas bounds
+      // to demonstrate the feature without breaking the map UI.
+      const sivasLat = 39.750;
+      const sivasLng = 37.016;
+      
+      const distanceApprox = Math.sqrt(Math.pow(lat - sivasLat, 2) + Math.pow(lng - sivasLng, 2));
+      
+      if (distanceApprox > 0.5) {
+        // User is more than ~50km from Sivas. Simulate a Sivas location.
+        alert("You appear to be outside Sivas! We are simulating a location near the city center for demonstration.");
+        lat = sivasLat + (Math.random() * 0.02 - 0.01);
+        lng = sivasLng + (Math.random() * 0.02 - 0.01);
+      }
+      
+      document.getElementById('gps-toast')?.remove();
+      
+      // Set Origin to user location
+      window.setPinFromMap('origin', lat, lng);
+      
+      // Pan Map to location
+      window.liveMap.setView([lat, lng], 15);
+      
+      // Drop a special blue marker
+      L.marker([lat, lng], {
+        icon: L.divIcon({
+          html: `<div class="w-4 h-4 bg-blue-500 border-2 border-white rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)] animate-pulse"></div>`,
+          className: '', iconSize: [16,16]
+        })
+      }).addTo(routeLayerGroup).bindPopup("<b class='text-xs uppercase'>Your Location</b>").openPopup();
+
+    },
+    (error) => {
+      document.getElementById('gps-toast')?.remove();
+      alert("Unable to retrieve your location. Please check browser permissions.");
+    }
+  );
+}
 
 function setClickMode(mode) {
     window.clickMode = mode;
@@ -638,7 +1332,7 @@ async function fetchOSRMRoute(lineId, stopsCount) {
         
         if (data.routes && data.routes.length > 0) {
             const geojsonCoords = data.routes[0].geometry.coordinates;
-            const latLngs = geojsonCoords.map(c => [c[1], c[0]]); // Leaflet uses [lat, lon]
+            const latLngs = geojsonCoords.map(c => [c[1], c[0]]);
             
             const segments = [];
             const stops = [];
@@ -665,22 +1359,12 @@ async function ensureLineCoords() {
     if (Object.keys(window.cachedLineCoords).length > 0 || window.isFetchingCoords) return;
     window.isFetchingCoords = true;
     
-    // Add fetching toast
-    const mapContainer = document.getElementById('live-map');
-    const toast = document.createElement('div');
-    toast.id = 'osrm-toast';
-    toast.className = 'absolute top-6 left-1/2 -translate-x-1/2 z-[2000] bg-metroblue-900 text-white px-5 py-3 rounded-sm text-xs font-bold uppercase tracking-wider shadow-heavy flex items-center gap-2';
-    toast.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span> Loading Network Data...`;
-    mapContainer.appendChild(toast);
-
     for (const lineId in DATA.stopsByLine) {
         const stops = DATA.stopsByLine[lineId];
         window.cachedLineCoords[lineId] = await fetchOSRMRoute(lineId, stops.length);
     }
     
     window.isFetchingCoords = false;
-    const t = document.getElementById('osrm-toast');
-    if(t) t.remove();
 }
 
 function updateTimeOffset(val) {
@@ -698,12 +1382,11 @@ function updateTimeOffset(val) {
 
 const busIconHtml = `<div class="w-8 h-8 bg-metroblue-900 text-white rounded-sm shadow-md border-2 border-white dark:border-gray-800 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">directions_bus</span></div>`;
 const busIcon = L.divIcon({ html: busIconHtml, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
-const stopIcon = L.divIcon({ html: `<div class="w-3.5 h-3.5 bg-white border-[3px] border-metroblue-600 rounded-full shadow-sm"></div>`, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
 function getMapTileUrl() {
   return isDarkMode 
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'; // Using light_all for a cleaner Metro look
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'; 
 }
 
 function updateMapTheme() {
@@ -734,7 +1417,6 @@ function initMapIfNeeded() {
         updateMapTheme();
         routeLayerGroup.addTo(window.liveMap);
         populateMapStops();
-        setClickMode('origin'); // Enforce default state
         
         window.liveMap.on('click', function(e) {
             if (Object.keys(window.cachedLineCoords).length === 0) return;
@@ -742,13 +1424,22 @@ function initMapIfNeeded() {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
             
-            // Allow quick drop mapping for origin & destination
-            if (window.clickMode) {
-                window.setPinFromMap(window.clickMode, lat, lng);
-                if (window.clickMode === 'origin') {
-                    setClickMode('dest');
-                }
-            }
+            const popupContent = `
+                <div class="flex flex-col gap-0 p-0 min-w-[150px]">
+                    <div class="font-extrabold text-xs text-metroblue-900 uppercase tracking-widest mb-2 border-b-2 border-gray-100 pb-1">Set Location</div>
+                    <button onclick="window.setPinFromMap('origin', ${lat}, ${lng})" class="w-full text-left px-3 py-2 text-xs font-bold rounded-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors">
+                        <span class="material-symbols-outlined text-[16px] text-green-600">my_location</span> Origin
+                    </button>
+                    <button onclick="window.setPinFromMap('dest', ${lat}, ${lng})" class="w-full text-left px-3 py-2 text-xs font-bold rounded-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors">
+                        <span class="material-symbols-outlined text-[16px] text-metrored-600">flag</span> Destination
+                    </button>
+                </div>
+            `;
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(popupContent)
+                .openOn(window.liveMap);
         });
 
         ensureLineCoords().then(() => {
@@ -798,7 +1489,7 @@ function updateBusPosition(bus, realTimeMs) {
     const timeOffsetSimMs = window.globalTimeOffsetMinutes * 60000 * simSpeedMultiplier;
     const simTime = realTimeMs * simSpeedMultiplier + timeOffsetSimMs;
     
-    const cond = typeof getSystemConditions === 'function' ? getSystemConditions() : { traffic: 'moderate', weather: 'clear' };
+    const cond = getSystemConditions();
     const trafficFactor = {low: 1.2, moderate: 1.0, high: 0.6, congested: 0.4}[cond.traffic] ?? 1.0;
     const weatherFactor = {clear: 1.0, cloudy: 0.95, rain: 0.8, snow: 0.5}[cond.weather] ?? 1.0;
     
@@ -837,23 +1528,6 @@ function updateBusPosition(bus, realTimeMs) {
     const lng = startP[1] + (endP[1] - startP[1]) * pointProgress;
     
     bus.marker.setLatLng([lat, lng]);
-    
-    if (bus.marker.isPopupOpen()) {
-        const displaySpeedFactor = Math.round(speedMultiplier * 100);
-        const status = segmentPhase < segmentSimTime ? "In Transit" : "Dwelling";
-        const timePrefix = window.globalTimeOffsetMinutes < 0 ? "PAST" : (window.globalTimeOffsetMinutes > 0 ? "FUTURE" : "LIVE");
-        
-        bus.marker.setPopupContent(`
-          <div class="font-extrabold text-xs mb-1 text-metroblue-900 uppercase tracking-widest border-b border-gray-200 pb-1">${realLineId} <span class="opacity-50">•</span> ${timePrefix}</div>
-          <div class="text-xs text-gray-700 mb-1 flex items-center gap-1.5 font-bold mt-2">
-            <span class="inline-block w-2 h-2 rounded-full ${segmentPhase < segmentSimTime ? 'bg-green-500' : 'bg-amber-500'}"></span>
-            ${status}
-          </div>
-          <div class="text-[10px] text-gray-500 uppercase tracking-wider">
-            SPEED: <b>${displaySpeedFactor}%</b>
-          </div>
-        `);
-    }
 }
 
 function updateItineraryPanel(realTimeMs) {
@@ -871,7 +1545,6 @@ function updateItineraryPanel(realTimeMs) {
     
     const baseSpeeds = { 'L01': 1.1, 'L02': 0.9, 'L03': 0.7, 'L04': 1.0, 'L05': 1.3 };
     
-    // Use leg 1 for waiting calculations
     const metaLeg = meta.type === 'direct' ? meta : meta.leg1;
     const speedMultiplier = (baseSpeeds[metaLeg.lineId] || 1.0) * trafficFactor * weatherFactor;
     
@@ -928,7 +1601,7 @@ function updateItineraryPanel(realTimeMs) {
         
         const d1 = window.liveMap.distance(window.userPins.origin.latlng, window.cachedLineCoords[oLineId].stops[oStopIdx]);
         const d2 = window.liveMap.distance(window.userPins.dest.latlng, window.cachedLineCoords[dLineId].stops[dStopIdx]);
-        const walkMins = Math.ceil((d1 + d2) / 84); // 84 meters / minute average walk speed
+        const walkMins = Math.ceil((d1 + d2) / 84);
         walkTimeText = `<span class="inline-flex items-center gap-1 ml-2 text-gray-500 font-bold border-l-2 border-gray-300 pl-2"><span class="material-symbols-outlined text-[14px]">directions_walk</span>+${walkMins}M WALK</span>`;
     }
 
@@ -975,65 +1648,48 @@ function updateItineraryPanel(realTimeMs) {
     `;
 }
 
-// Rewritten completely to securely find all loops & bidirectional sequences
 function findBestRoute(fromStop, toStop) {
     let bestDirect = null;
     let minDirectStops = Infinity;
     
-    // Helper to get ALL occurrences of a station on a given line (solves looping issues)
-    const getIndices = (arr, val) => arr.map((v, i) => v === val ? i : -1).filter(i => i !== -1);
-
-    // 1. Direct Routes
     for (const [lineId, stops] of Object.entries(DATA.stopsByLine)) {
-        const sIndices = getIndices(stops, fromStop);
-        const eIndices = getIndices(stops, toStop);
-        for (let sIdx of sIndices) {
-            for (let eIdx of eIndices) {
-                // Must go forward based on how the arrays trace physically on the map
-                if (sIdx < eIdx) {
-                    const numStops = eIdx - sIdx;
-                    if (numStops < minDirectStops) {
-                        minDirectStops = numStops;
-                        bestDirect = { type: 'direct', lineId, originIdx: sIdx, destIdx: eIdx, fromStop, toStop, totalStops: numStops };
-                    }
-                }
+        const sIdx = stops.indexOf(fromStop);
+        const eIdx = stops.lastIndexOf(toStop);
+        if (sIdx !== -1 && eIdx !== -1 && sIdx < eIdx) {
+            const numStops = eIdx - sIdx;
+            if (numStops < minDirectStops) {
+                minDirectStops = numStops;
+                bestDirect = { type: 'direct', lineId, originIdx: sIdx, destIdx: eIdx, fromStop, toStop, totalStops: numStops };
             }
         }
     }
     
-    // 2. 1-Transfer Routes
     let bestTransfer = null;
     let minTransferStops = Infinity;
     for (const [line1, stops1] of Object.entries(DATA.stopsByLine)) {
-        const sIndices = getIndices(stops1, fromStop);
-        if (sIndices.length === 0) continue;
+        const sIdx = stops1.indexOf(fromStop);
+        if (sIdx === -1) continue;
         
-        for (let sIdx of sIndices) {
-            for (let i = sIdx + 1; i < stops1.length; i++) {
-                const transferStop = stops1[i];
-                if (transferStop === toStop) continue;
+        for (let i = sIdx + 1; i < stops1.length; i++) {
+            const transferStop = stops1[i];
+            if (transferStop === toStop) continue;
+            
+            for (const [line2, stops2] of Object.entries(DATA.stopsByLine)) {
+                if (line1 === line2) continue;
                 
-                for (const [line2, stops2] of Object.entries(DATA.stopsByLine)) {
-                    if (line1 === line2) continue;
-                    
-                    const tIndices2 = getIndices(stops2, transferStop);
-                    const eIndices2 = getIndices(stops2, toStop);
-                    
-                    for (let tIdx2 of tIndices2) {
-                        for (let eIdx2 of eIndices2) {
-                            if (tIdx2 < eIdx2) {
-                                const numStops = (i - sIdx) + (eIdx2 - tIdx2);
-                                if (numStops + 4 < minTransferStops) { // Transfer penalty of 4 units
-                                    minTransferStops = numStops + 4;
-                                    bestTransfer = {
-                                        type: 'transfer',
-                                        leg1: { lineId: line1, originIdx: sIdx, destIdx: i, fromStop, toStop: transferStop },
-                                        leg2: { lineId: line2, originIdx: tIdx2, destIdx: eIdx2, fromStop: transferStop, toStop },
-                                        transferStop, totalStops: numStops
-                                    };
-                                }
-                            }
-                        }
+                const tIdx2 = stops2.indexOf(transferStop);
+                const eIdx2 = stops2.lastIndexOf(toStop);
+                
+                if (tIdx2 !== -1 && eIdx2 !== -1 && tIdx2 < eIdx2) {
+                    const numStops = (i - sIdx) + (eIdx2 - tIdx2);
+                    if (numStops + 4 < minTransferStops) { 
+                        minTransferStops = numStops + 4;
+                        bestTransfer = {
+                            type: 'transfer',
+                            leg1: { lineId: line1, originIdx: sIdx, destIdx: i, fromStop, toStop: transferStop },
+                            leg2: { lineId: line2, originIdx: tIdx2, destIdx: eIdx2, fromStop: transferStop, toStop },
+                            transferStop, totalStops: numStops
+                        };
                     }
                 }
             }
@@ -1090,56 +1746,36 @@ function optimizeRouteFromPins() {
         }
     }
 
-    // Refined routing loop to ensure exact walking distance calculations to the specific route nodes
     if (window.userOriginLatLng && window.userDestLatLng) {
         let minScore = Infinity;
+        const uniqueStops = [...new Set(allStops.map(s => s.name))];
         
-        // Find top 4 closest stops to the origin pin and top 4 to the dest pin to avoid calculating every combination
-        const uniqueStopsO = allStops.map(s => ({...s, dist: window.liveMap.distance(window.userOriginLatLng, s.coord)})).sort((a,b)=>a.dist - b.dist);
-        const uniqueStopsD = allStops.map(s => ({...s, dist: window.liveMap.distance(window.userDestLatLng, s.coord)})).sort((a,b)=>a.dist - b.dist);
-        
-        const getTopUnique = (arr, max) => {
-            let res = []; let names = new Set();
-            for(let s of arr) {
-                if(!names.has(s.name)) { names.add(s.name); res.push(s); if(res.length >= max) break; }
-            }
-            return res;
-        };
-        
-        const topO = getTopUnique(uniqueStopsO, 4);
-        const topD = getTopUnique(uniqueStopsD, 4);
-        
-        for (const oNode of topO) {
-            for (const dNode of topD) {
-                if (oNode.name === dNode.name) continue;
-                const route = findBestRoute(oNode.name, dNode.name);
+        for (const oName of uniqueStops) {
+            for (const dName of uniqueStops) {
+                if (oName === dName) continue;
+                const route = findBestRoute(oName, dName);
                 if (!route) continue;
                 
-                // Fetch the exact sequence coordinates required by the identified route
-                const oLine = route.type === 'direct' ? route.lineId : route.leg1.lineId;
-                const oIdx = route.type === 'direct' ? route.originIdx : route.leg1.originIdx;
-                const dLine = route.type === 'direct' ? route.lineId : route.leg2.lineId;
-                const dIdx = route.type === 'direct' ? route.destIdx : route.leg2.destIdx;
-
-                const oStopObj = allStops.find(s => s.lineId === oLine && s.idx === oIdx);
-                const dStopObj = allStops.find(s => s.lineId === dLine && s.idx === dIdx);
-
-                if (!oStopObj || !dStopObj) continue;
-
-                // Only measure walk distances exactly against the calculated route's specific stations
-                const walkO = window.liveMap.distance(window.userOriginLatLng, oStopObj.coord);
-                const walkD = window.liveMap.distance(window.userDestLatLng, dStopObj.coord);
+                let minWalkO = Infinity; let bestOPin = null;
+                allStops.filter(s => s.name === oName).forEach(s => {
+                    const d = window.liveMap.distance(window.userOriginLatLng, s.coord);
+                    if (d < minWalkO) { minWalkO = d; bestOPin = s; }
+                });
                 
-                // Walk is measured in meters. We heavily penalize transit length/transfers 
-                // so it picks efficient paths, but still prefers less walking if available.
-                const transitPenalty = route.type === 'direct' ? route.totalStops * 150 : (route.totalStops * 150 + 1000);
-                const score = walkO + walkD + transitPenalty;
+                let minWalkD = Infinity; let bestDPin = null;
+                allStops.filter(s => s.name === dName).forEach(s => {
+                    const d = window.liveMap.distance(window.userDestLatLng, s.coord);
+                    if (d < minWalkD) { minWalkD = d; bestDPin = s; }
+                });
+                
+                const transitPenalty = route.type === 'direct' ? route.totalStops * 500 : (route.totalStops * 500 + 2000);
+                const score = minWalkO + minWalkD + transitPenalty;
                 
                 if (score < minScore) {
                     minScore = score;
                     bestMeta = route;
-                    bestOStop = oStopObj;
-                    bestDStop = dStopObj;
+                    bestOStop = bestOPin;
+                    bestDStop = bestDPin;
                 }
             }
         }
@@ -1185,7 +1821,7 @@ function loadLiveMap(routeMeta) {
     if (globalAnimationId) cancelAnimationFrame(globalAnimationId);
     
     let linesToDraw = [];
-    if (!routeMeta) linesToDraw = Object.keys(DATA.stopsByLine); // Draw everything if no route selected
+    if (!routeMeta) linesToDraw = ['L01', 'L03', 'L04'];
     else if (routeMeta.type === 'direct') linesToDraw = [routeMeta.lineId];
     else if (routeMeta.type === 'transfer') linesToDraw = [routeMeta.leg1.lineId, routeMeta.leg2.lineId];
     
@@ -1197,9 +1833,7 @@ function loadLiveMap(routeMeta) {
         
         allCoordinates = allCoordinates.concat(lineData.path);
         
-        // Use a dimmer line if showing everything without a route, strong line if routing
-        const opac = !routeMeta ? 0.3 : 0.8;
-        const polyline = L.polyline(lineData.path, { color: '#003882', weight: 6, opacity: opac, lineJoin: 'round' }).addTo(routeLayerGroup);
+        const polyline = L.polyline(lineData.path, { color: '#003882', weight: 6, opacity: 0.8, lineJoin: 'round' }).addTo(routeLayerGroup);
 
         lineData.stops.forEach((coord, index) => {
             let isOrigin = false, isDest = false, isTransfer = false;
@@ -1222,7 +1856,7 @@ function loadLiveMap(routeMeta) {
                 if (window.userPins && window.userPins.dest && window.userPins.dest.lineId === lId && window.userPins.dest.idx === index) isDest = true;
             }
             
-            let iconHtml = `<div class="w-3 h-3 bg-white border-2 border-metroblue-500 rounded-full shadow-sm opacity-${routeMeta ? '100' : '40'}"></div>`;
+            let iconHtml = `<div class="w-3 h-3 bg-white border-2 border-metroblue-500 rounded-full shadow-sm"></div>`;
             if (isOrigin) iconHtml = `<div class="w-4 h-4 bg-green-500 border-2 border-white rounded-sm shadow-md z-50 relative"></div>`;
             if (isDest) iconHtml = `<div class="w-4 h-4 bg-metrored-500 border-2 border-white rounded-sm shadow-md z-50 relative"></div>`;
             if (isTransfer) iconHtml = `<div class="w-4 h-4 bg-amber-500 border-2 border-white rounded-full shadow-md z-50 relative"></div>`;
@@ -1232,6 +1866,10 @@ function loadLiveMap(routeMeta) {
             const popupHtml = `
               <div class="font-extrabold text-xs mb-1 text-metroblue-900 uppercase tracking-widest border-b border-gray-200 pb-1">${stops[index]}</div>
               <div class="text-xs text-gray-500 font-bold mb-3 uppercase tracking-wider">${lId} - STOP ${index+1}</div>
+              <div class="flex gap-2">
+                <button onclick="window.setPinFromMap('origin', ${coord[0]}, ${coord[1]})" class="flex-1 px-2 py-1.5 text-[9px] font-bold rounded-sm border border-gray-200 hover:bg-gray-100 transition-colors uppercase tracking-wider text-gray-700">START</button>
+                <button onclick="window.setPinFromMap('dest', ${coord[0]}, ${coord[1]})" class="flex-1 px-2 py-1.5 text-[9px] font-bold rounded-sm border border-gray-200 hover:bg-gray-100 transition-colors uppercase tracking-wider text-gray-700">END</button>
+              </div>
             `;
             
             L.marker(coord, { icon })
@@ -1242,7 +1880,6 @@ function loadLiveMap(routeMeta) {
         const fleetSize = routeMeta ? 3 : 1; 
         for(let i=0; i<fleetSize; i++) {
             const marker = L.marker(lineData.path[0], { icon: busIcon }).addTo(routeLayerGroup);
-            marker.bindPopup(`CALCULATING...`);
             activeBuses.push({ marker, segments: lineData.segments, lineId: lId, fleetOffset: i/fleetSize });
         }
     });
@@ -1251,14 +1888,14 @@ function loadLiveMap(routeMeta) {
         window.liveMap.fitBounds(L.latLngBounds(allCoordinates), { padding: [50, 50] });
     }
 
-    if (window.userPins && window.userPins.origin) {
+    if (window.userPins && window.userPins.origin && linesToDraw.includes(window.userPins.origin.lineId)) {
         const pin = window.userPins.origin;
         const stopCoord = window.cachedLineCoords[pin.lineId].stops[pin.idx];
         L.polyline([pin.latlng, stopCoord], {color: '#16a34a', weight: 4, dashArray: '4, 6', opacity: 0.8}).addTo(routeLayerGroup);
         L.marker(pin.latlng, { icon: L.divIcon({html: '<div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-md"></div>', className: '', iconSize: [12,12], iconAnchor: [6,6]}) }).addTo(routeLayerGroup);
         allCoordinates.push(pin.latlng);
     }
-    if (window.userPins && window.userPins.dest) {
+    if (window.userPins && window.userPins.dest && linesToDraw.includes(window.userPins.dest.lineId)) {
         const pin = window.userPins.dest;
         const stopCoord = window.cachedLineCoords[pin.lineId].stops[pin.idx];
         L.polyline([stopCoord, pin.latlng], {color: '#e3001b', weight: 4, dashArray: '4, 6', opacity: 0.8}).addTo(routeLayerGroup);
@@ -1268,6 +1905,11 @@ function loadLiveMap(routeMeta) {
 
     if (!routeMeta && allCoordinates.length > 0) {
         window.liveMap.fitBounds(L.latLngBounds(allCoordinates), { padding: [50, 50] });
+        linesToDraw.forEach(lId => {
+           const lineData = window.cachedLineCoords[lId];
+           const marker2 = L.marker(lineData.path[0], { icon: busIcon }).addTo(routeLayerGroup);
+           activeBuses.push({ marker: marker2, segments: lineData.segments, lineId: lId + "_2", fleetOffset: 0.5 });
+        });
     }
     
     startGlobalAnimation();
@@ -1333,11 +1975,11 @@ function timeBucketKey(h){
 function crowdColor(l){ return {Empty:"#16a34a", Light:"#84cc16", Moderate:"#eab308", Busy:"#f97316", Crowded:"#e3001b"}[l] || "#003882"; }
 
 function crowdLabel(p){
-  if(p<=10)return{label:"Empty",emoji:"🟢"};
-  if(p<=25)return{label:"Light",emoji:"🟡"};
-  if(p<=45)return{label:"Moderate",emoji:"🟠"};
-  if(p<=70)return{label:"Busy",emoji:"🔴"};
-  return{label:"Crowded",emoji:"🔴"};
+  if(p<=10)return{label:"Empty",emoji:"&#x1f4ba;"};
+  if(p<=25)return{label:"Light",emoji:"&#x1f4ba;"};
+  if(p<=45)return{label:"Moderate",emoji:"&#x1f465;"};
+  if(p<=70)return{label:"Busy",emoji:"&#x1f465;"};
+  return{label:"Crowded",emoji:"&#x1f465;"};
 }
 
 function getSystemConditions() {
@@ -1368,48 +2010,9 @@ function updateMapConditionsUI() {
     wText.textContent = cond.weather;
 
     if (cond.traffic === 'low') { tIcon.textContent = 'directions_car'; tIcon.className = 'material-symbols-outlined text-[20px] text-green-500'; }
-  else if (cond.traffic === 'moderate') { tIcon.textContent = 'traffic'; tIcon.className = 'material-symbols-outlined text-[20px] text-amber-500'; }
-  else if (cond.traffic === 'high' || cond.traffic === 'congested') { tIcon.textContent = 'traffic'; tIcon.className = 'material-symbols-outlined text-[20px] text-metrored-500'; }
-  tText.textContent = cond.traffic;
-  
-  renderAmbientEffects(cond.weather, cond.traffic);
-}
-
-function renderAmbientEffects(weather, traffic) {
-    const container = document.getElementById('ambient-container');
-    if (!container) return;
-    container.innerHTML = ''; // Clear old effects
-    document.body.classList.remove('red-alert-glow');
-
-    // Traffic/Alert Condition
-    if (traffic === 'congested' || traffic === 'high') {
-        document.body.classList.add('red-alert-glow');
-    }
-
-    // Weather Effects
-    if (weather === 'snow') {
-        for (let i = 0; i < 40; i++) {
-            let flake = document.createElement('div');
-            flake.className = 'snow-flake';
-            flake.style.left = Math.random() * 100 + 'vw';
-            flake.style.width = flake.style.height = (Math.random() * 4 + 2) + 'px';
-            flake.style.animationDuration = (Math.random() * 3 + 3) + 's'; // 3 to 6s
-            flake.style.animationDelay = '-' + (Math.random() * 5) + 's';
-            flake.style.opacity = (Math.random() * 0.6 + 0.2).toString();
-            container.appendChild(flake);
-        }
-    } else if (weather === 'clear' && isDarkMode) {
-        for (let i = 0; i < 25; i++) {
-            let star = document.createElement('div');
-            star.className = 'star';
-            star.style.left = Math.random() * 100 + 'vw';
-            star.style.top = Math.random() * 100 + 'vh';
-            star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
-            star.style.animationDuration = (Math.random() * 2 + 2) + 's'; // 2 to 4s
-            star.style.animationDelay = '-' + (Math.random() * 2) + 's';
-            container.appendChild(star);
-        }
-    }
+    else if (cond.traffic === 'moderate') { tIcon.textContent = 'traffic'; tIcon.className = 'material-symbols-outlined text-[20px] text-amber-500'; }
+    else if (cond.traffic === 'high' || cond.traffic === 'congested') { tIcon.textContent = 'traffic'; tIcon.className = 'material-symbols-outlined text-[20px] text-metrored-500'; }
+    tText.textContent = cond.traffic;
 }
 
 async function runPredictor() {
@@ -1433,6 +2036,18 @@ async function runPredictor() {
   resultsContainer.classList.add("flex");
   
   resultsContainer.innerHTML = `<div class="p-12 h-full flex flex-col items-center justify-center text-center text-metroblue-500 font-extrabold tracking-widest uppercase animate-pulse"><span class="material-symbols-outlined text-4xl mb-2 animate-spin">refresh</span> Accessing network data...</div>`;
+
+  // NEW LOGIC: Check if station is closed due to admin verified accident
+  if (closedStations.includes(stopName)) {
+      resultsContainer.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-full text-center p-8 bg-red-50 dark:bg-red-900/20 border-2 border-metrored-500 rounded-sm shadow-sm mt-4">
+            <span class="material-symbols-outlined text-6xl text-metrored-500 mb-4 animate-pulse">do_not_disturb_on</span>
+            <h3 class="text-2xl font-display font-extrabold text-metrored-600 dark:text-metrored-400 uppercase tracking-tight mb-2">STATION CLOSED</h3>
+            <p class="text-sm font-bold text-red-800 dark:text-red-300 uppercase tracking-widest max-w-md">Services are temporarily bypassing this station due to a verified incident or accident. Please use an alternative route.</p>
+        </div>`;
+      window.currentArrivalsData = []; 
+      return;
+  }
 
   try {
       let arrivals = [];
@@ -1464,8 +2079,16 @@ async function runPredictor() {
 
       arrivals.sort((a, b) => a.totalWait - b.totalWait);
 
+      // Save arrivals data globally so the speech function can access it
+      window.currentArrivalsData = arrivals;
+
       let html = `<div class="flex justify-between items-end mb-2 px-1 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
-          <h3 class="text-xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase">${stopName}</h3>
+          <div class="flex items-center gap-3">
+              <h3 class="text-xl font-display font-extrabold text-metroblue-900 dark:text-white uppercase">${stopName}</h3>
+              <button id="btn-speak-arrivals" onclick="speakCurrentArrivals('${stopName.replace(/'/g, "\\'")}')" class="flex items-center justify-center w-8 h-8 rounded-full bg-metroblue-500 hover:bg-metroblue-600 transition-colors shadow-sm" title="Read Aloud (Accessibility)">
+                  <span id="icon-speak-arrivals" class="material-symbols-outlined text-[20px] text-white">volume_up</span>
+              </button>
+          </div>
           <div class="text-[10px] font-bold text-white bg-green-600 px-2 py-1 rounded-sm shadow-sm flex items-center gap-1.5 uppercase tracking-wider">
               <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Live
           </div>
@@ -1516,25 +2139,92 @@ async function runPredictor() {
       }
       html += `</div>`;
       resultsContainer.innerHTML = html;
-      
-      // Web Speech API Announcement
-      if (isAudioMode && arrivals.length > 0) {
-          const best = arrivals[0];
-          const destStop = DATA.stopsByLine[best.lineId][DATA.stopsByLine[best.lineId].length - 1];
-          const statement = `Attention: The next ${best.lineId} service towards ${destStop} is arriving in ${best.totalWait} minutes. ${best.is_delayed ? 'This service is currently delayed.' : 'This service is on time.'}`;
-          
-          window.speechSynthesis.cancel(); // Clear queue
-          const msg = new SpeechSynthesisUtterance(statement);
-          msg.rate = 0.95;
-          window.speechSynthesis.speak(msg);
-      }
-      
   } catch(e) {
       errBox.textContent = "Unable to connect to the transit server.";
       errBox.classList.remove("hidden");
       resultsContainer.innerHTML = '';
       resultsContainer.classList.add("hidden");
   }
+}
+
+function speakCurrentArrivals(stopName) {
+  if (!('speechSynthesis' in window)) {
+    alert("Sorry, Text-to-Speech is not supported in your browser.");
+    return;
+  }
+  
+  // Cancel any ongoing speech so it doesn't overlap
+  window.speechSynthesis.cancel();
+  
+  const arrivals = window.currentArrivalsData || [];
+  const voices = window.speechSynthesis.getVoices();
+  
+  // Look for Female English Voice (Samantha on Mac, Zira on Windows, Google Female on Chrome)
+  let enVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google')));
+  if (!enVoice) enVoice = voices.find(v => v.lang.includes('en')); // Fallback
+
+  // Look for Female Turkish Voice (Yelda on Mac, Emel on Windows, Google Female on Chrome)
+  let trVoice = voices.find(v => v.lang.includes('tr') && (v.name.includes('Female') || v.name.includes('Yelda') || v.name.includes('Emel') || v.name.includes('Google')));
+  // Avoid "Tolga" as it is explicitly a male Windows voice
+  if (!trVoice) trVoice = voices.find(v => v.lang.includes('tr') && !v.name.includes('Tolga')); 
+  
+  // Chunk 1: Intro in English
+  const uIntro = new SpeechSynthesisUtterance("Arrivals for ");
+  uIntro.lang = 'en-US';
+  if (enVoice) uIntro.voice = enVoice;
+  uIntro.rate = 0.85;
+  uIntro.volume = 0.6; // Reduced volume to make Turkish stand out
+
+  // Chunk 2: Station name in Turkish
+  const uStation = new SpeechSynthesisUtterance(stopName);
+  uStation.lang = 'tr-TR';
+  if (trVoice) uStation.voice = trVoice;
+  uStation.rate = 0.85;
+  uStation.volume = 1.0; // Maximum volume for clarity
+
+  // Chunk 3: Arrival times in English
+  let timesText = ". ";
+  if (arrivals.length === 0) {
+    timesText += "There are no buses scheduled at this time.";
+  } else {
+    arrivals.forEach(arr => {
+      // Format L05 to "Line 5" for better and more natural pronunciation
+      const formattedLine = arr.lineId.replace('L0', 'Line '); 
+      timesText += `${formattedLine} in ${arr.totalWait} minutes. `;
+    });
+  }
+  
+  const uTimes = new SpeechSynthesisUtterance(timesText);
+  uTimes.lang = 'en-US';
+  if (enVoice) uTimes.voice = enVoice;
+  uTimes.rate = 0.85;
+  uTimes.pitch = 1.0;
+  uTimes.volume = 0.6; // Reduced volume to make Turkish stand out
+  
+  // Add visual feedback to the button across the speech sequence
+  const icon = document.getElementById('icon-speak-arrivals');
+  if (icon) {
+    uIntro.onstart = () => { 
+        icon.classList.add('animate-pulse', 'text-amber-300'); 
+        icon.classList.remove('text-white');
+    };
+    
+    const stopAnimation = () => { 
+        icon.classList.remove('animate-pulse', 'text-amber-300'); 
+        icon.classList.add('text-white');
+    };
+
+    // Stop animation when the final chunk ends (or if any error occurs)
+    uTimes.onend = stopAnimation;
+    uIntro.onerror = stopAnimation;
+    uStation.onerror = stopAnimation;
+    uTimes.onerror = stopAnimation;
+  }
+  
+  // Queue the chunks in order
+  window.speechSynthesis.speak(uIntro);
+  window.speechSynthesis.speak(uStation);
+  window.speechSynthesis.speak(uTimes);
 }
 
 async function planTrip() {
@@ -1545,7 +2235,6 @@ async function planTrip() {
   const stops = DATA.stopsByLine[lineId] || [];
   const now = new Date(), hour = now.getHours(), dow = now.getDay()===0?6:now.getDay()-1, isWeekend=(now.getDay()===0||now.getDay()===6)?1:0;
   const speedFactor = {low:0.95, moderate:0.85, high:0.7, congested:0.5}[cond.traffic] ?? 0.85;
-  let html = "", cumulativeDelay = 0;
   
   const resultContainer = document.getElementById("tp_result");
   resultContainer.innerHTML = `<div class="p-12 text-center text-metroblue-500 font-extrabold tracking-widest uppercase animate-pulse">Loading Line Data...</div>`;
@@ -1553,66 +2242,84 @@ async function planTrip() {
   resultContainer.classList.remove("hidden");
   resultContainer.classList.add("flex");
   
-  html += `<div class="relative py-4 w-full">`;
-  // Metro thick line background
+  // --- NEW LOGIC: Fetch all stops concurrently ---
+  const fetchPromises = stops.map((stopName, i) => {
+    const body = {
+      line_id:lineId, stop_sequence:i+1, stop_type:"regular", hour_of_day:hour, day_of_week:dow, is_weekend:isWeekend, 
+      cumulative_delay_min: i * 0.5, // approximate for request payload
+      speed_factor:speedFactor, minutes_to_next_bus:12, weather_condition:cond.weather, 
+      traffic_level:cond.traffic, time_bucket:timeBucketKey(hour), dwell_time_min:1.0
+    };
+    
+    return Promise.all([
+      fetchWithFallback(`${API_BASE}/predict-arrival`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)}).then(r => r.json()),
+      fetchWithFallback(`${API_BASE}/predict-crowd`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)}).then(r => r.json())
+    ]).then(([arr, crowd]) => ({ arr, crowd, stopName, index: i })).catch(e => ({ error: true, stopName, index: i }));
+  });
+
+  const stopResults = await Promise.all(fetchPromises);
+  // ---------------------------------------------
+
+  let html = `<div class="relative py-4 w-full">`;
   html += `<div class="absolute left-[38px] top-8 bottom-8 w-2.5 bg-metroblue-500 z-0 border-x border-metroblue-600"></div>`;
   
-  for(let i=0; i<stops.length; i++) {
-    try {
-      const body = {
-        line_id:lineId, stop_sequence:i+1, stop_type:"regular", hour_of_day:hour, day_of_week:dow, is_weekend:isWeekend, 
-        cumulative_delay_min:cumulativeDelay, speed_factor:speedFactor, minutes_to_next_bus:12, weather_condition:cond.weather, 
-        traffic_level:cond.traffic, time_bucket:timeBucketKey(hour), dwell_time_min:1.0
-      };
-      
-      const [arrRes, crowdRes] = await Promise.all([
-        fetchWithFallback(`${API_BASE}/predict-arrival`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)}),
-        fetchWithFallback(`${API_BASE}/predict-crowd`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)})
-      ]);
-      
-      const arr = await arrRes.json(), crowd = await crowdRes.json();
-      const delay = Math.max(0, arr.predicted_delay_min), passengers = Math.max(0, crowd.predicted_passengers);
-      const cl = crowdLabel(passengers), color = crowdColor(cl.label);
-      const isFirst = i===0, isLast = i===stops.length-1;
-      
-      cumulativeDelay += delay * 0.2;
-      
-      const circleClass = isFirst || isLast 
-        ? "bg-white border-[4px] border-metroblue-900 w-6 h-6 rounded-sm ml-[22px]" 
-        : "bg-white border-[3px] border-metroblue-500 w-4 h-4 rounded-full ml-[26px]";
-        
-      const statusHtml = delay > 2 
-        ? `<span class="text-white font-bold bg-metrored-500 px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-widest">+${delay.toFixed(0)}M DELAY</span>` 
-        : `<span class="text-white font-bold bg-green-600 px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-widest">ON TIME</span>`;
+  let cumulativeDelay = 0;
 
-      html += `
-      <div class="relative z-10 flex items-center gap-6 group py-2">
-        <div class="flex items-center justify-center flex-shrink-0 w-20">
-          <div class="${circleClass} shadow-sm z-10"></div>
-        </div>
-        <div class="flex-1 min-w-0 bg-white dark:bg-gray-900 rounded-sm p-4 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-solid transition-shadow">
-          <div>
-            <div class="font-extrabold text-base text-metroblue-900 dark:text-white uppercase tracking-wide mb-1.5">${stops[i]}</div>
-            <div class="flex items-center gap-2">${statusHtml}<span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">${DATA.lineNames[lineId]}</span></div>
-          </div>
-          <div class="flex items-center gap-2 px-2 py-1 rounded-sm border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 w-fit">
-            <span class="text-sm">${cl.emoji}</span>
-            <span class="text-xs font-black tabular-nums" style="color: ${color};">${passengers}</span>
-          </div>
-        </div>
-      </div>`;
-    } catch(e) {
+  stopResults.forEach((res, i) => {
+    if (res.error) {
       html += `
       <div class="relative z-10 flex items-center gap-6 py-2">
         <div class="flex items-center justify-center flex-shrink-0 w-20">
           <div class="bg-gray-300 w-4 h-4 rounded-full ml-[26px] z-10"></div>
         </div>
         <div class="flex-1 bg-gray-50 dark:bg-gray-800 rounded-sm p-4 border border-gray-200 dark:border-gray-700 font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm">
-          ${stops[i]} <span class="text-[10px] font-normal ml-2 opacity-60">(DATA UNAVAILABLE)</span>
+          ${res.stopName} <span class="text-[10px] font-normal ml-2 opacity-60">(DATA UNAVAILABLE)</span>
         </div>
       </div>`;
+      return;
     }
-  }
+
+    const isClosed = closedStations.includes(res.stopName);
+
+    const { arr, crowd } = res;
+    const delay = Math.max(0, arr.predicted_delay_min), passengers = Math.max(0, crowd.predicted_passengers);
+    const cl = isClosed ? {label:"Closed", emoji:"&#x26d4;"} : crowdLabel(passengers); 
+    const color = isClosed ? "#e3001b" : crowdColor(cl.label);
+    const isFirst = i===0, isLast = i===stops.length-1;
+    
+    cumulativeDelay += delay * 0.2;
+    if (isClosed) cumulativeDelay += 15; // Massive simulated delay for detours
+    
+    const circleClass = isFirst || isLast 
+      ? (isClosed ? "bg-metrored-500 border-[4px] border-metrored-900 w-6 h-6 rounded-sm ml-[22px]" : "bg-white border-[4px] border-metroblue-900 w-6 h-6 rounded-sm ml-[22px]")
+      : (isClosed ? "bg-metrored-500 border-[3px] border-metrored-900 w-4 h-4 rounded-full ml-[26px]" : "bg-white border-[3px] border-metroblue-500 w-4 h-4 rounded-full ml-[26px]");
+      
+    let statusHtml = delay > 2 
+      ? `<span class="text-white font-bold bg-metrored-500 px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-widest">+${delay.toFixed(0)}M DELAY</span>` 
+      : `<span class="text-white font-bold bg-green-600 px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-widest">ON TIME</span>`;
+      
+    if (isClosed) {
+       statusHtml = `<span class="text-white font-bold bg-black px-2 py-0.5 rounded-sm text-[10px] uppercase tracking-widest">DETOUR / SKIPPED</span>`;
+    }
+
+    html += `
+    <div class="relative z-10 flex items-center gap-6 group py-2">
+      <div class="flex items-center justify-center flex-shrink-0 w-20">
+        <div class="${circleClass} shadow-sm z-10"></div>
+      </div>
+      <div class="flex-1 min-w-0 ${isClosed ? 'bg-red-50 dark:bg-red-900/20 border-metrored-300 dark:border-metrored-800 opacity-80' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'} rounded-sm p-4 border flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-solid transition-shadow">
+        <div>
+          <div class="font-extrabold text-base ${isClosed ? 'text-metrored-700 dark:text-metrored-400 line-through decoration-2' : 'text-metroblue-900 dark:text-white'} uppercase tracking-wide mb-1.5">${stops[i]}</div>
+          <div class="flex items-center gap-2">${statusHtml}<span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">${DATA.lineNames[lineId]}</span></div>
+        </div>
+        <div class="flex items-center gap-2 px-2 py-1 rounded-sm border ${isClosed ? 'border-red-200 bg-red-100 dark:border-red-800 dark:bg-red-900/40' : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800'} w-fit">
+          <span class="text-sm">${cl.emoji}</span>
+          <span class="text-xs font-black tabular-nums" style="color: ${color};">${isClosed ? '---' : passengers}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+
   html += `</div>`;
   resultContainer.innerHTML = html;
 }
