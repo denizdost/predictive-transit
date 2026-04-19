@@ -7,11 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-<!-- Leaflet.js for Maps -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<!-- Chart.js for Admin Analytics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -153,16 +151,12 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 min-h-screen flex flex-col selection:bg-metrored-500 selection:text-white relative overflow-x-hidden">
 
-<!-- Atmospheric Weather Effects Overlay -->
 <div id="weather-overlay"></div>
 
-<!-- Toast Container (replaces alerts) -->
 <div id="toast-container" class="fixed bottom-4 right-4 z-[10000] flex flex-col gap-2 pointer-events-none"></div>
 
-<!-- Navigation Bar -->
 <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-    <!-- Logo -->
     <div class="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer" onclick="switchTab('predictor')">
       <div class="relative w-10 h-10 flex items-center justify-center">
         <div class="absolute w-7 h-7 bg-metrored-500 rotate-45 rounded-lg shadow-sm"></div>
@@ -173,7 +167,6 @@
       </div>
     </div>
 
-    <!-- Desktop Nav -->
     <nav class="hidden md:flex items-stretch h-full gap-2 font-bold text-sm tracking-wide uppercase">
       <button onclick="switchTab('predictor')" id="nav-predictor" class="nav-item h-full px-4 flex items-center gap-2 border-b-4 border-metrored-500 text-metroblue-600 dark:text-white transition-colors">
         Live Times
@@ -192,7 +185,6 @@
       </button>
     </nav>
 
-    <!-- Right Controls -->
     <div class="flex items-center gap-3 sm:gap-4">
       <div class="hidden sm:flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 py-2 px-4 rounded-full bg-gray-50 dark:bg-gray-800 shadow-inner">
         <span class="material-symbols-outlined text-[18px] text-metrored-500">schedule</span>
@@ -202,7 +194,6 @@
         <span id="theme-icon" class="material-symbols-outlined text-[20px] block">dark_mode</span>
       </button>
       
-      <!-- Auth Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2">
         <button id="settings-btn" onclick="openSettingsModal()" class="hidden items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-full transition-colors shadow-sm border border-gray-200 dark:border-gray-600" title="Account Settings">
           <span class="material-symbols-outlined text-[20px]">settings</span>
@@ -215,7 +206,6 @@
     </div>
   </div>
 
-  <!-- Mobile Nav -->
   <div class="md:hidden flex bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
     <button onclick="switchTab('predictor')" id="nav-predictor-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-metroblue-600 dark:text-white border-b-4 border-metrored-500 transition-colors">Live Times</button>
     <button onclick="switchTab('map')" id="nav-map-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Map</button>
@@ -232,14 +222,12 @@
   </div>
   <div class="w-full overflow-hidden whitespace-nowrap pl-32">
     <div id="alert-ticker" class="inline-block animate-marquee text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
-      <!-- Injected via JS -->
-    </div>
+      </div>
   </div>
 </div>
 
 <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
 
-<!-- PAGE: LIVE TIMES -->
 <div id="page-predictor" class="page active">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
     <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Real-Time Arrivals</h1>
@@ -289,7 +277,6 @@
   </div>
 </div>
 
-<!-- PAGE: MAP -->
 <div id="page-map" class="page">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
     <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Interactive Map & Routing</h1>
@@ -370,7 +357,6 @@
   </div>
 </div>
 
-<!-- PAGE: EXPLORER -->
 <div id="page-planner" class="page">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
     <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Network Explorer</h1>
@@ -408,7 +394,6 @@
   </div>
 </div>
 
-<!-- PAGE: ACHIEVEMENTS -->
 <div id="page-achievements" class="page">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
     <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Commuter Achievements</h1>
@@ -418,7 +403,6 @@
   <div id="achievements-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 </div>
 
-<!-- PAGE: DASHBOARD -->
 <div id="page-dashboard" class="page">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
     <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight" id="dash-title">Community Portal</h1>
@@ -441,9 +425,6 @@
   </div>
 </footer>
 
-<!-- Modals -->
-
-<!-- Map Report Modal -->
 <div id="map-report-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
   <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-heavy border-t-8 border-metrored-500 p-8 mx-4 relative transform scale-100 transition-transform">
      <button onclick="closeMapReportModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -466,7 +447,6 @@
   </div>
 </div>
 
-<!-- Admin Reroute Modal -->
 <div id="reroute-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity">
   <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-heavy border-t-8 border-amber-500 p-8 mx-4 relative transform scale-100 transition-transform">
      <button onclick="closeRerouteModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -625,106 +605,31 @@ window.getActiveDetoursHash = function(simTime) {
                      .map(r => r.id).sort().join(',');
 };
 
+const API_BASE = "http://localhost:8000";
+
 // --- DATASET INTEGRATION ENGINE ---
-window.CSV_DB = {
-    passengerFlow: null,
-    stopArrivals: null
-};
-
-async function loadCSVData() {
-    if (!window.CSV_DB.passengerFlow) {
-        try {
-            const res = await fetch('passenger_flow.csv');
-            if(res.ok) window.CSV_DB.passengerFlow = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load passenger_flow.csv. Using fallback logic."); }
-    }
-    if (!window.CSV_DB.stopArrivals) {
-        try {
-            const res = await fetch('stop_arrivals.csv');
-            if(res.ok) window.CSV_DB.stopArrivals = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load stop_arrivals.csv. Using fallback logic."); }
-    }
-}
-
-function parseCSV(text) {
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    if(lines.length === 0) return [];
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    return lines.slice(1).map(line => {
-        const vals = line.split(',');
-        let obj = {};
-        headers.forEach((h, i) => {
-            obj[h] = vals[i] ? vals[i].trim().replace(/"/g, '') : '';
-        });
-        return obj;
-    });
-}
-
 async function queryDataset(endpoint, body) {
-    await loadCSVData();
-    const { line_id, hour_of_day, weather_condition, traffic_level } = body;
-    
-    if (endpoint.includes('predict-crowd')) {
-        let flowData = window.CSV_DB.passengerFlow || [];
-        if (flowData.length > 0) {
-            // Priority match on line & exact hour
-            let matches = flowData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
-            if (matches.length === 0) matches = flowData.filter(d => d.line_id === line_id); // fallback to line average
-            
-            if (matches.length > 0) {
-                let totalWait = 0;
-                matches.forEach(m => totalWait += parseFloat(m.avg_passengers_waiting || 0));
-                let avg = totalWait / matches.length;
-                
-                // Add contextual simulation variances
-                if (weather_condition === 'rain') avg *= 1.2;
-                if (weather_condition === 'snow') avg *= 1.4;
-                
-                return { 
-                    line_id, 
-                    predicted_passengers: Math.max(0, Math.round(avg)),
-                    source: `Aggregated from ${matches.length} historical flow records`
-                };
-            }
+    try {
+        const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API returned status: ${response.status}`);
         }
+        
+        return await response.json();
+        
+    } catch (e) {
+        console.warn(`Failed to reach ML backend at ${endpoint}. Falling back to algorithmic mock. Error:`, e);
+        return generateAlgorithmicMock(endpoint, body);
     }
-    
-    if (endpoint.includes('predict-arrival')) {
-        let arrData = window.CSV_DB.stopArrivals || [];
-        if (arrData.length > 0) {
-            // Priority match on line & exact hour
-            let matches = arrData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
-            if (matches.length === 0) matches = arrData.filter(d => d.line_id === line_id); // fallback to line average
-            
-            if (matches.length > 0) {
-                let totalDelay = 0;
-                matches.forEach(m => totalDelay += parseFloat(m.delay_min || 0));
-                let avgDelay = totalDelay / matches.length;
-                
-                // Introduce current condition modifiers to historical average
-                if (traffic_level === 'high') avgDelay += 5;
-                else if (traffic_level === 'moderate') avgDelay += 2;
-                if (weather_condition === 'snow') avgDelay += 4;
-                if (weather_condition === 'rain') avgDelay += 2;
-                
-                avgDelay = Math.max(0, avgDelay);
-                let isGhost = avgDelay > 10 && Math.random() > 0.8;
-
-                return {
-                    line_id,
-                    predicted_delay_min: avgDelay,
-                    status: isGhost ? "⚠️ ANOMALY: Ghost Bus suspected" : "Normal",
-                    is_delayed: avgDelay > 2.0 || isGhost,
-                    confidence_window: `${Math.max(0, Math.round(avgDelay-1))} - ${Math.round(avgDelay+2)} mins`,
-                    ai_reasoning: `Matched ${matches.length} historic trips for ${hour_of_day}:00`,
-                    weather_source: "Live Data Analysis"
-                };
-            }
-        }
-    }
-    
-    // Fallback to purely algorithmic if no CSV data is available (e.g., failed to load)
-    return generateAlgorithmicMock(endpoint, body);
 }
 
 function toggleTheme() {
@@ -1055,7 +960,6 @@ function renderDashboard() {
     }).join('');
 
     content.innerHTML = `
-      <!-- KPI Row -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
              <div>
@@ -1095,7 +999,6 @@ function renderDashboard() {
          </div>
       </div>
 
-      <!-- Charts Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
             <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-2 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center justify-between">
@@ -1118,7 +1021,6 @@ function renderDashboard() {
         </div>
       </div>
 
-      <!-- Weather Row -->
       <div class="mb-8 bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
         <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-6 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2">
             <span class="material-symbols-outlined text-blue-500 text-2xl">cloud</span> 4-Day Operational Weather Outlook
@@ -1151,7 +1053,6 @@ function renderDashboard() {
         </div>
       </div>
 
-      <!-- Users and Incidents Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
            <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-2xl">group</span> Registered Users</h2>
@@ -1163,7 +1064,6 @@ function renderDashboard() {
         </div>
       </div>
       
-      <!-- Achievements Row -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
            <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-amber-500 text-2xl">military_tech</span> Manage Achievements</h2>
@@ -2152,7 +2052,6 @@ function loadLiveMap(meta) {
     startGlobalAnimation();
 }
 
-const API_BASE = "http://localhost:8000";
 const DATA = {
   lineNames: {L01:"Merkez - Universitesi", L02:"Sanayi - Hastane", L03:"Baglar - Carsi", L04:"Esentepe - Meydan", L05:"Terminal - Kampus"},
   stopsByLine: {
@@ -2278,8 +2177,8 @@ async function runPredictor() {
           };
 
           const [arrRes, crowdRes] = await Promise.all([
-              queryDataset(`${API_BASE}/predict-arrival`, body),
-              queryDataset(`${API_BASE}/predict-crowd`, body)
+              queryDataset(`/predict-arrival`, body),
+              queryDataset(`/predict-crowd`, body)
           ]);
           
           arrivals.push({ 
