@@ -616,7 +616,7 @@ window.LINE_WAYPOINTS = {};
 
 async function loadNetworkFromCSV() {
     try {
-        const res = await fetch('../data/bus_stops.csv');
+        const res = await fetch('/data/bus_stops.csv');
         if (!res.ok) throw new Error("CSV not accessible");
 
         const text = await res.text();
@@ -660,13 +660,13 @@ async function loadNetworkFromCSV() {
 async function loadCSVData() {
     if (!window.CSV_DB.passengerFlow) {
         try {
-            const res = await fetch('../data/passenger_flow.csv');
+            const res1 = await fetch('/data/passenger_flow.csv');
             if(res.ok) window.CSV_DB.passengerFlow = parseCSV(await res.text());
         } catch(e) { console.warn("Failed to load passenger_flow.csv. Using fallback logic."); }
     }
     if (!window.CSV_DB.stopArrivals) {
         try {
-            const res = await fetch('../data/stop_arrivals.csv');
+            const res2 = await fetch('/data/stop_arrivals.csv');
             if(res.ok) window.CSV_DB.stopArrivals = parseCSV(await res.text());
         } catch(e) { console.warn("Failed to load stop_arrivals.csv. Using fallback logic."); }
     }
