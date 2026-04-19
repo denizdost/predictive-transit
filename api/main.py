@@ -154,7 +154,14 @@ def get_stops_near_me(lat: float, lon: float, radius_km: float = 0.5):
     radius_deg = radius_km / 111.0
     indices = spatial_index.query_ball_point([lat, lon], r=radius_deg)
     return {"stops": stops_df.iloc[indices][['stop_id', 'line_name']].to_dict(orient='records')}
+# --- STATIC FILES MOUNT ---
+# Expose the data folder so the frontend can download CSVs dynamically
+if os.path.exists(DATA_DIR):
+    app.mount("/data", StaticFiles(directory=DATA_DIR), name="data")
 
+# This ensures the API serves your index.html natively at http://localhost:8000/
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 # --- FRONTEND MOUNT ---
 # This ensures the API serves your index.html natively at http://localhost:8000/
 if os.path.exists(FRONTEND_DIR):
