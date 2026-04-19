@@ -616,8 +616,9 @@ window.LINE_WAYPOINTS = {};
 
 async function loadNetworkFromCSV() {
     try {
+        // CHANGED: Fetch absolute path /data/
         const res = await fetch('/data/bus_stops.csv');
-        if (!res.ok) throw new Error("CSV not accessible");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const text = await res.text();
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -633,23 +634,19 @@ async function loadNetworkFromCSV() {
             const lat = parseFloat(obj.latitude || obj.lat);
             const lon = parseFloat(obj.longitude || obj.lon);
 
-            // Build Line Names Dictionary
-            if (!window.DATA.lineNames[lid]) {
-                window.DATA.lineNames[lid] = obj.line_name || `Line ${lid}`;
-            }
-
-            // Build Stops Sequence Array
+            if (!window.DATA.lineNames[lid]) window.DATA.lineNames[lid] = obj.line_name || `Line ${lid}`;
             if (!window.DATA.stopsByLine[lid]) window.DATA.stopsByLine[lid] = [];
-            if (sname && !window.DATA.stopsByLine[lid].includes(sname)) {
-                window.DATA.stopsByLine[lid].push(sname);
-            }
-
-            // Build GPS Waypoints
+            if (sname && !window.DATA.stopsByLine[lid].includes(sname)) window.DATA.stopsByLine[lid].push(sname);
+            
             if (!window.LINE_WAYPOINTS[lid]) window.LINE_WAYPOINTS[lid] = [];
-            if (!isNaN(lat) && !isNaN(lon)) {
-                window.LINE_WAYPOINTS[lid].push([lat, lon]);
-            }
+            if (!isNaN(lat) && !isNaN(lon)) window.LINE_WAYPOINTS[lid].push([lat, lon]);
         });
+
+        console.log("Network topology successfully loaded.");
+    } catch (e) {
+        console.error("Failed to load bus_stops.csv. The map and dropdowns will be empty.", e);
+    }
+}
 
         console.log("Network topology dynamically loaded from CSV.");
     } catch (e) {
@@ -660,15 +657,17 @@ async function loadNetworkFromCSV() {
 async function loadCSVData() {
     if (!window.CSV_DB.passengerFlow) {
         try {
-            const res1 = await fetch('/data/passenger_flow.csv');
+            // CHANGED: Fetch absolute path /data/
+            const res = await fetch('/data/passenger_flow.csv');
             if(res.ok) window.CSV_DB.passengerFlow = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load passenger_flow.csv. Using fallback logic."); }
+        } catch(e) { console.warn("Failed to load passenger_flow.csv"); }
     }
     if (!window.CSV_DB.stopArrivals) {
         try {
-            const res2 = await fetch('/data/stop_arrivals.csv');
+            // CHANGED: Fetch absolute path /data/
+            const res = await fetch('/data/stop_arrivals.csv');
             if(res.ok) window.CSV_DB.stopArrivals = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load stop_arrivals.csv. Using fallback logic."); }
+        } catch(e) { console.warn("Failed to load stop_arrivals.csv"); }
     }
 }
 
