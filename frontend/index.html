@@ -613,58 +613,60 @@ window.CSV_DB = {
 
 window.DATA = { lineNames: {}, stopsByLine: {} };
 window.LINE_WAYPOINTS = {};
+window.STOP_META = {};  
+window.adminWeatherOverride = null; 
 
 async function loadNetworkFromCSV() {
     try {
-        // CHANGED: Fetch absolute path /data/
         const res = await fetch('/data/bus_stops.csv');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' loading bus_stops.csv');
 
         const text = await res.text();
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const rows = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
-        lines.slice(1).forEach(line => {
-            const vals = line.split(',');
-            let obj = {};
-            headers.forEach((h, i) => { obj[h] = vals[i] ? vals[i].trim().replace(/"/g, '') : ''; });
+        const allRows = rows.slice(1).map(row => {
+            const vals = row.split(',');
+            const obj = {};
+            headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim().replace(/"/g, ''); });
+            return obj;
+        }).filter(obj => obj.line_id);
 
+        allRows.sort((a, b) =>
+            a.line_id.localeCompare(b.line_id) ||
+            parseInt(a.stop_sequence || 0) - parseInt(b.stop_sequence || 0)
+        );
+
+        allRows.forEach(obj => {
             const lid = obj.line_id;
-            const sname = obj.stop_name;
-            const lat = parseFloat(obj.latitude || obj.lat);
-            const lon = parseFloat(obj.longitude || obj.lon);
+            const sid = obj.stop_id;
+            const lat = parseFloat(obj.latitude);
+            const lon = parseFloat(obj.longitude);
 
-            if (!window.DATA.lineNames[lid]) window.DATA.lineNames[lid] = obj.line_name || `Line ${lid}`;
-            if (!window.DATA.stopsByLine[lid]) window.DATA.stopsByLine[lid] = [];
-            if (sname && !window.DATA.stopsByLine[lid].includes(sname)) window.DATA.stopsByLine[lid].push(sname);
-            
+            if (!window.DATA.lineNames[lid])    window.DATA.lineNames[lid]    = obj.line_name || ('Line ' + lid);
+            if (!window.DATA.stopsByLine[lid])  window.DATA.stopsByLine[lid]  = [];
+            if (sid && !window.DATA.stopsByLine[lid].includes(sid)) window.DATA.stopsByLine[lid].push(sid);
+            if (sid) window.STOP_META[sid] = { stop_sequence: parseInt(obj.stop_sequence)||1, stop_type: obj.stop_type||'regular', line_id: lid };
+
             if (!window.LINE_WAYPOINTS[lid]) window.LINE_WAYPOINTS[lid] = [];
-            if (!isNaN(lat) && !isNaN(lon)) window.LINE_WAYPOINTS[lid].push([lat, lon]);
+            if (!isNaN(lat) && !isNaN(lon))  window.LINE_WAYPOINTS[lid].push([lat, lon]);
         });
 
-        console.log("Network topology successfully loaded.");
     } catch (e) {
-        console.error("Failed to load bus_stops.csv. The map and dropdowns will be empty.", e);
+        console.error('Failed to load bus_stops.csv — dropdowns will be empty:', e);
     }
 }
 
-        console.log("Network topology dynamically loaded from CSV.");
-    } catch (e) {
-        console.warn("Failed to load bus_stops.csv. Ensure your backend is serving the data directory.", e);
-    }
-}
 
 async function loadCSVData() {
     if (!window.CSV_DB.passengerFlow) {
         try {
-            // CHANGED: Fetch absolute path /data/
             const res = await fetch('/data/passenger_flow.csv');
             if(res.ok) window.CSV_DB.passengerFlow = parseCSV(await res.text());
         } catch(e) { console.warn("Failed to load passenger_flow.csv"); }
     }
     if (!window.CSV_DB.stopArrivals) {
         try {
-            // CHANGED: Fetch absolute path /data/
             const res = await fetch('/data/stop_arrivals.csv');
             if(res.ok) window.CSV_DB.stopArrivals = parseCSV(await res.text());
         } catch(e) { console.warn("Failed to load stop_arrivals.csv"); }
@@ -692,16 +694,14 @@ async function queryDataset(endpoint, body) {
     if (endpoint.includes('predict-crowd')) {
         let flowData = window.CSV_DB.passengerFlow || [];
         if (flowData.length > 0) {
-            // Priority match on line & exact hour
             let matches = flowData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
-            if (matches.length === 0) matches = flowData.filter(d => d.line_id === line_id); // fallback to line average
+            if (matches.length === 0) matches = flowData.filter(d => d.line_id === line_id);
             
             if (matches.length > 0) {
                 let totalWait = 0;
                 matches.forEach(m => totalWait += parseFloat(m.avg_passengers_waiting || 0));
                 let avg = totalWait / matches.length;
                 
-                // Add contextual simulation variances
                 if (weather_condition === 'rain') avg *= 1.2;
                 if (weather_condition === 'snow') avg *= 1.4;
                 
@@ -717,16 +717,14 @@ async function queryDataset(endpoint, body) {
     if (endpoint.includes('predict-arrival')) {
         let arrData = window.CSV_DB.stopArrivals || [];
         if (arrData.length > 0) {
-            // Priority match on line & exact hour
             let matches = arrData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
-            if (matches.length === 0) matches = arrData.filter(d => d.line_id === line_id); // fallback to line average
+            if (matches.length === 0) matches = arrData.filter(d => d.line_id === line_id); 
             
             if (matches.length > 0) {
                 let totalDelay = 0;
                 matches.forEach(m => totalDelay += parseFloat(m.delay_min || 0));
                 let avgDelay = totalDelay / matches.length;
                 
-                // Introduce current condition modifiers to historical average
                 if (traffic_level === 'high') avgDelay += 5;
                 else if (traffic_level === 'moderate') avgDelay += 2;
                 if (weather_condition === 'snow') avgDelay += 4;
@@ -748,7 +746,6 @@ async function queryDataset(endpoint, body) {
         }
     }
     
-    // Fallback to purely algorithmic if no CSV data is available (e.g., failed to load)
     return generateAlgorithmicMock(endpoint, body);
 }
 
@@ -767,7 +764,6 @@ function toggleTheme() {
   }
 }
 
-// Custom Toast Notification System
 function showToast(msg, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -796,7 +792,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.classList.remove('dark'); icon.textContent = 'dark_mode'; isDarkMode = false;
   }
 
-  // Load the network dynamically from the CSV before populating the UI dropdowns
   await loadNetworkFromCSV();
 
   setInterval(updateClock, 1000); updateClock();
@@ -1044,6 +1039,35 @@ function renderDashboard() {
     const pendingCount = appReports.filter(r => r.status === 'pending').length;
     const trafficColor = cond.traffic === 'low' ? 'text-green-500' : (cond.traffic === 'moderate' ? 'text-amber-500' : 'text-metrored-500');
 
+    const WEATHER_BTNS = [
+        {key:'clear', icon:'sunny', label:'Clear'},
+        {key:'cloudy',icon:'cloud', label:'Cloudy'},
+        {key:'rain',  icon:'rainy', label:'Rain'},
+        {key:'snow',  icon:'ac_unit',label:'Snow'},
+        {key:'fog',   icon:'foggy', label:'Fog'},
+        {key:'wind',  icon:'air',   label:'Wind'},
+    ];
+    const weatherPanelHtml = `
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-solid border border-gray-100 dark:border-gray-700 p-6 mb-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[20px] text-amber-500">partly_cloudy_day</span>
+            </div>
+            <div>
+                <h3 class="font-extrabold text-sm uppercase tracking-widest text-metroblue-900 dark:text-white">Weather Override</h3>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mt-0.5">Force site-wide weather effect · does not affect Live Map</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            ${WEATHER_BTNS.map(w => {
+                const active = window.adminWeatherOverride === w.key;
+                const cls = active ? 'bg-metroblue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                return '<button data-weather="' + w.key + '" onclick="setAdminWeather(\'' + w.key + '\')" class="admin-weather-btn ' + cls + ' rounded-2xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-all font-bold text-[11px] uppercase tracking-wider border border-gray-200 dark:border-gray-600"><span class="material-symbols-outlined text-[22px]">' + w.icon + '</span>' + w.label + '</button>';
+            }).join('')}
+        </div>
+        <p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-4">Active: <span id="admin-weather-active-label" class="text-metroblue-500">${window.adminWeatherOverride ? window.adminWeatherOverride.toUpperCase() : 'AUTO'}</span></p>
+    </div>`;
+
     let usersHtml = Object.keys(registeredUsers).map(u => `
       <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
         <span class="font-extrabold text-sm text-metroblue-900 dark:text-white">${u}</span>
@@ -1055,13 +1079,11 @@ function renderDashboard() {
     let reportsHtml = pendingReports.length === 0 ? `<p class="p-6 text-sm text-gray-500 font-bold uppercase tracking-widest text-center">No pending reports.</p>` : pendingReports.map(r => {
       let actions = '';
       if (r.lat && r.lng) {
-          // It's a map report - give Reroute action
           actions = `
              <button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
              <button onclick="openRerouteModal('${r.id}')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Reroute</button>
           `;
       } else {
-          // Standard station report
           actions = `
              <button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
              <button onclick="resolveReport('${r.id}', 'verified')" class="px-4 py-2 bg-metrored-500 hover:bg-metrored-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Close Station</button>
@@ -1083,7 +1105,7 @@ function renderDashboard() {
       `;
     }).join('');
 
-    content.innerHTML = `
+    content.innerHTML = weatherPanelHtml + `
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
              <div>
@@ -1254,7 +1276,8 @@ function renderDashboard() {
          <span class="text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg whitespace-nowrap ${r.status === 'rerouted' ? 'bg-amber-500 text-white shadow-sm' : (r.status === 'verified' ? 'bg-metrored-100 text-metrored-700 dark:bg-metrored-900/30 dark:text-metrored-400' : (r.status === 'rejected' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'))}">${r.status}</span>
        </div>
     `).join('');
-    let allStops = Array.from(new Set(Object.values(window.DATA.stopsByLine).flat())).sort();
+    let allStops = Array.from(new Set(Object.values(window.DATA.stopsByLine).flat()))
+        .sort((a,b) => { const ma=window.STOP_META[a]||{},mb=window.STOP_META[b]||{}; return (ma.line_id||"").localeCompare(mb.line_id||"") || (ma.stop_sequence||0)-(mb.stop_sequence||0); });
     let stopOptions = allStops.map(s => `<option value="${s}">${s}</option>`).join('');
     content.innerHTML = `
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1287,7 +1310,7 @@ function renderDashboard() {
   }
 }
 
-function initAdminCharts() {
+async function initAdminCharts() {
     const capCtx = document.getElementById('capacityChart');
     const trafCtx = document.getElementById('trafficChart');
     if (!capCtx || !trafCtx) return;
@@ -1298,6 +1321,34 @@ function initAdminCharts() {
     const textColor = isDarkMode ? '#9ca3af' : '#4b5563';
     const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
 
+    // SAFE DYNAMIC LOAD: Fetch from CSV with fallbacks
+    let loadData = [135, 80, 45, 110, 60];
+    let capacityData = [100, 100, 100, 100, 100];
+    
+    try {
+        const res = await fetch('/data/bus_trips.csv');
+        if (res.ok) {
+            const tripsText = await res.text();
+            const trips = parseCSV(tripsText);
+            if (trips.length > 0) {
+                loadData = []; capacityData = [];
+                ['L01', 'L02', 'L03', 'L04', 'L05'].forEach(line => {
+                    const lineTrips = trips.filter(t => t.line_id === line);
+                    if(lineTrips.length > 0) {
+                        let avgLoad = lineTrips.reduce((acc, t) => acc + parseFloat(t.avg_occupancy_pct || 0), 0) / lineTrips.length;
+                        let cap = parseInt(lineTrips[0].bus_capacity || 100);
+                        loadData.push(Math.round((avgLoad / 100) * cap) || Math.round(avgLoad)); 
+                        capacityData.push(cap);
+                    } else {
+                        loadData.push(0); capacityData.push(100);
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        console.warn("Failed to load dynamic chart data, using fallback.", e);
+    }
+
     capacityChartInstance = new Chart(capCtx, {
         type: 'bar',
         data: {
@@ -1305,7 +1356,7 @@ function initAdminCharts() {
             datasets: [
                 {
                     label: 'Current Passenger Load',
-                    data: [135, 80, 45, 110, 60],
+                    data: loadData,
                     backgroundColor: [
                         'rgba(227, 0, 27, 0.85)',
                         'rgba(0, 56, 130, 0.7)', 
@@ -1319,7 +1370,7 @@ function initAdminCharts() {
                 {
                     type: 'line',
                     label: 'Bus Capacity Limit',
-                    data: [100, 100, 100, 100, 100],
+                    data: capacityData,
                     borderColor: isDarkMode ? '#cbd5e1' : '#334155',
                     borderWidth: 2,
                     borderDash: [5, 5],
@@ -1539,8 +1590,17 @@ function updateFavoriteBtnState() {
 function setGlobalStopAndSearch(station) { document.getElementById('p_global_stop').value = station; updateFavoriteBtnState(); runPredictor(); }
 function populateLiveTimesStops() {
   const allStops = new Set(); Object.values(window.DATA.stopsByLine).forEach(stops => stops.forEach(s => allStops.add(s)));
-  const sortedStops = Array.from(allStops).sort();
-  let html = '<option value="">- Choose a station -</option>'; sortedStops.forEach(s => html += `<option value="${s}">${s}</option>`);
+  // Sort by line then sequence for logical ordering
+  const sortedStops = Array.from(allStops).sort((a, b) => {
+      const ma = window.STOP_META[a] || {}, mb = window.STOP_META[b] || {};
+      return (ma.line_id||"").localeCompare(mb.line_id||"") || (ma.stop_sequence||0) - (mb.stop_sequence||0);
+  });
+  let html = '<option value="">- Choose a station -</option>';
+  sortedStops.forEach(s => {
+      const m = window.STOP_META[s] || {};
+      const label = m.line_id ? `${m.line_id} · Stop ${m.stop_sequence} (${m.stop_type})` : s;
+      html += `<option value="${s}">${label}</option>`;
+  });
   const select = document.getElementById('p_global_stop'); if(select) select.innerHTML = html;
 }
 
@@ -1761,8 +1821,11 @@ async function fetchOSRMRoute(lineId, stopsCount) {
             }
         });
 
-        const coordString = waypoints.map(p => `${p[0]},${p[1]}`).join(';');
-        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`);
+        const coordString = waypoints.map(p => `${p[1]},${p[0]}`).join(';');  // OSRM expects lon,lat
+        const controller = new AbortController();
+        const osrmTimeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`, { signal: controller.signal });
+        clearTimeout(osrmTimeout);
         const data = await res.json();
         if (data.routes && data.routes.length > 0) {
             const geojsonCoords = data.routes[0].geometry.coordinates; const latLngs = geojsonCoords.map(c => [c[1], c[0]]);
@@ -1823,8 +1886,16 @@ function getMapTileUrl() { return isDarkMode ? 'https://{s}.basemaps.cartocdn.co
 function updateMapTheme() { if (!window.liveMap) return; if (mapTileLayer) window.liveMap.removeLayer(mapTileLayer); mapTileLayer = L.tileLayer(getMapTileUrl(), { attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(window.liveMap); }
 function populateMapStops() {
     const allStops = new Set(); Object.values(window.DATA.stopsByLine).forEach(stops => stops.forEach(s => allStops.add(s)));
-    const sortedStops = Array.from(allStops).sort(); let html = '<option value="">- Select Station -</option>';
-    sortedStops.forEach(s => html += `<option value="${s}">${s}</option>`);
+    const sortedStops = Array.from(allStops).sort((a, b) => {
+        const ma = window.STOP_META[a]||{}, mb = window.STOP_META[b]||{};
+        return (ma.line_id||"").localeCompare(mb.line_id||"") || (ma.stop_sequence||0)-(mb.stop_sequence||0);
+    });
+    let html = '<option value="">- Select Station -</option>';
+    sortedStops.forEach(s => {
+        const m = window.STOP_META[s]||{};
+        const label = m.line_id ? `${m.line_id} · Stop ${m.stop_sequence} (${m.stop_type})` : s;
+        html += `<option value="${s}">${label}</option>`;
+    });
     document.getElementById('m_from').innerHTML = html; document.getElementById('m_to').innerHTML = html;
     
     // Also populate the planner line dropdown
@@ -1838,7 +1909,22 @@ function populateMapStops() {
 
 function initMapIfNeeded() {
     if (!window.liveMap) {
-        window.liveMap = L.map('live-map').setView([39.750, 37.016], 14);
+        // SAFE DYNAMIC MAP CENTER: Calculate average from loaded waypoints, fallback to hardcoded if empty.
+        let centerLat = 39.697, centerLng = 37.050; 
+        let totalLat = 0, totalLng = 0, pointCount = 0;
+        
+        for (const lineId in window.LINE_WAYPOINTS) {
+            window.LINE_WAYPOINTS[lineId].forEach(coord => {
+                totalLat += coord[0]; totalLng += coord[1]; pointCount++;
+            });
+        }
+        if (pointCount > 0) {
+            centerLat = totalLat / pointCount;
+            centerLng = totalLng / pointCount;
+        }
+
+        window.liveMap = L.map('live-map').setView([centerLat, centerLng], 13);
+        
         updateMapConditionsUI(); updateMapTheme();
         routeLayerGroup.addTo(window.liveMap); populateMapStops();
         
@@ -1867,44 +1953,61 @@ function initMapIfNeeded() {
                 </div>`;
             L.popup().setLatLng(e.latlng).setContent(popupContent).openOn(window.liveMap);
         });
-        ensureLineCoords().then(() => { loadLiveMap(null); });
+        // Wait for CSV network data to be ready before fetching routes
+        (async () => {
+            if (Object.keys(window.DATA.stopsByLine).length === 0) {
+                await loadNetworkFromCSV();
+                populateLiveTimesStops();
+                populateMapStops();
+            }
+            await ensureLineCoords();
+            loadLiveMap(null);
+        })();
     }
     setTimeout(() => { window.liveMap.invalidateSize(); }, 100);
 }
 
-function generateFallbackCoordinates(lineId, stopCount) {
-    const center = [39.750, 37.016]; const coords = [center];
-    const mods = { 'L01': [0.002, 0.003], 'L02': [-0.002, 0.004], 'L03': [-0.003, -0.002], 'L04': [0.003, -0.003], 'L05': [0.004, 0.001] };
-    const mod = mods[lineId] || [0.002, 0.002]; let curr = [...center];
-    for (let i = 1; i < stopCount; i++) { curr[0] += mod[0] + (Math.random()-0.5)*0.002; curr[1] += mod[1] + (Math.random()-0.5)*0.002; coords.push([...curr]); }
-    
-    let isDetoured = false;
-    const simTime = window.getSimulatedTime();
-    appReports.forEach(r => {
-        if (r.status === 'rerouted' && r.lat && r.lng && (!r.expiresAt || r.expiresAt > simTime)) {
-            let minDist = Infinity;
-            let insertIdx = 1;
-            for(let i=0; i<coords.length-1; i++) {
-                const mid = [(coords[i][0]+coords[i+1][0])/2, (coords[i][1]+coords[i+1][1])/2];
-                const dist = Math.sqrt(Math.pow(mid[0]-r.lat, 2) + Math.pow(mid[1]-r.lng, 2));
-                if (dist < minDist) { minDist = dist; insertIdx = i + 1; }
-            }
-            if (minDist < 0.02) {
-                coords.splice(insertIdx, 0, [r.lat + 0.015, r.lng + 0.015]);
-                isDetoured = true;
-            }
-        }
-    });
+function generateFallbackCoordinates(lineId, stopCount, providedWaypoints, isDetoured) {
+    let coords = providedWaypoints || window.LINE_WAYPOINTS[lineId];
 
-    const segments = []; const stops = [];
-    const pps = (coords.length - 1) / (stopCount - 1);
-    for(let i=0; i < stopCount - 1; i++) {
-        const startIdx = Math.round(i * pps); const endIdx = Math.round((i + 1) * pps);
-        segments.push(coords.slice(startIdx, endIdx + 1)); stops.push(coords[startIdx]);
+    if (!coords || coords.length < 2) {
+        const center = [39.697, 37.050];
+        const mods = { L01:[0.003,0.004], L02:[-0.003,0.005], L03:[-0.004,-0.003], L04:[0.004,-0.004], L05:[0.005,0.002] };
+        const mod = mods[lineId] || [0.002, 0.002];
+        coords = [center]; let curr = [...center];
+        for (let i = 1; i < stopCount; i++) { curr = [curr[0]+mod[0], curr[1]+mod[1]]; coords.push([...curr]); }
+        isDetoured = false;
     }
-    stops.push(coords[coords.length - 1]);
-    
-    return { path: coords, stops, segments, isDetoured };
+
+    // Interpolate sub-points between stops for smooth animation without OSRM
+    function interp(p1, p2, steps) {
+        const pts = [];
+        for (let s = 0; s <= steps; s++)
+            pts.push([p1[0] + (p2[0]-p1[0])*s/steps, p1[1] + (p2[1]-p1[1])*s/steps]);
+        return pts;
+    }
+
+    const STEPS = 10;
+    const path = [], segments = [], stops = [];
+    const useCount = Math.min(stopCount, coords.length);
+    const pps = (coords.length - 1) / Math.max(useCount - 1, 1);
+
+    for (let i = 0; i < useCount - 1; i++) {
+        const si = Math.round(i * pps);
+        const ei = Math.min(Math.round((i+1) * pps), coords.length - 1);
+        const seg = [];
+        for (let k = si; k < ei; k++) {
+            const pts = interp(coords[k], coords[Math.min(k+1, coords.length-1)], STEPS);
+            k === si ? pts.forEach(p => seg.push(p)) : pts.slice(1).forEach(p => seg.push(p));
+        }
+        if (seg.length < 2) seg.push(coords[ei]);
+        segments.push(seg);
+        stops.push(coords[si]);
+        i === 0 ? seg.forEach(p => path.push(p)) : seg.slice(1).forEach(p => path.push(p));
+    }
+    stops.push(coords[Math.round((useCount-1)*pps)]);
+    console.log(`CSV route for ${lineId}: ${path.length} pts, ${segments.length} segs`);
+    return { path, stops, segments, isDetoured: !!isDetoured };
 }
 
 function startGlobalAnimation() {
@@ -2202,10 +2305,11 @@ async function runPredictor() {
           const strHash = (lineId.charCodeAt(2) + now.getHours() * 60 + Math.floor(now.getMinutes()/5)) % 15;
           const baseArrival = strHash + 1;
           
+          const meta = window.STOP_META[stopName] || {};
           const body = { 
               line_id: lineId, 
-              stop_sequence: 1, 
-              stop_type: "regular",
+              stop_sequence: meta.stop_sequence || 1, 
+              stop_type: meta.stop_type || "regular",
               time_bucket: timeBucketKey(now.getHours()),
               hour_of_day: now.getHours(), 
               day_of_week: now.getDay(),
@@ -2256,7 +2360,7 @@ async function runPredictor() {
       arrivals.forEach(a => {
           const cl = crowdLabel(a.passengers);
           const ai = a.raw_data.ai_reasoning || "Standard traffic evaluated";
-          const window = a.raw_data.confidence_window || "--";
+          const confWindow = a.raw_data.confidence_window || "--";
           const anomaly = a.raw_data.status && a.raw_data.status.includes('ANOMALY') ? a.raw_data.status : null;
 
           html += `
@@ -2280,7 +2384,7 @@ async function runPredictor() {
               <div class="pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-2">
                   <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                       <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-metroblue-500">psychology</span> ${ai}</span>
-                      <span class="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700"><span class="material-symbols-outlined text-[16px] text-amber-500">query_stats</span> Win: ${window}</span>
+                      <span class="flex items-center gap-1 bg-gray-50 dark:bg-gray-900 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700"><span class="material-symbols-outlined text-[16px] text-amber-500">query_stats</span> Win: ${confWindow}</span>
                   </div>
                   ${anomaly ? `<div class="text-metrored-500 font-black animate-pulse flex items-center gap-1.5 text-[10px] uppercase tracking-widest mt-2 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg w-fit"><span class="material-symbols-outlined text-[16px]">warning</span> ${anomaly}</div>` : ''}
               </div>
@@ -2307,6 +2411,149 @@ async function planTrip() {
     </div>`;
   });
   resCont.innerHTML = html + "</div>";
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function timeBucketKey(hour) {
+    if (hour >= 5  && hour < 7)  return 'early_morning';
+    if (hour >= 7  && hour < 9)  return 'morning_rush';
+    if (hour >= 9  && hour < 12) return 'midday';
+    if (hour >= 12 && hour < 14) return 'lunch';
+    if (hour >= 14 && hour < 17) return 'afternoon';
+    if (hour >= 17 && hour < 20) return 'evening_rush';
+    return 'evening';
+}
+
+function crowdLabel(passengers) {
+    if (passengers >= 60) return { label: 'Very Crowded', color: 'text-metrored-500' };
+    if (passengers >= 40) return { label: 'Crowded',      color: 'text-orange-500'   };
+    if (passengers >= 20) return { label: 'Moderate',     color: 'text-amber-500'    };
+    return                       { label: 'Quiet',         color: 'text-green-500'    };
+}
+
+function getSystemConditions() {
+    const sim  = new Date(window.getSimulatedTime());
+    const hour = sim.getHours();
+    const day  = sim.getDay();
+
+    const seed = (sim.getFullYear() * 1000 + sim.getMonth() * 31 + sim.getDate()) % 997;
+
+    const WEATHERS = ['clear', 'cloudy', 'rain', 'snow', 'fog', 'wind'];
+    const TRAFFICS = ['low', 'moderate', 'high', 'congested'];
+
+    const wIdx = seed % 10 < 5 ? 0 
+               : seed % 10 < 7 ? 1 
+               : seed % 10 < 8 ? 2 
+               : seed % 10 < 9 ? 5 
+               : seed % 2 === 0 ? 3 : 4; 
+    const weather = WEATHERS[wIdx];
+
+    let tIdx;
+    const isWeekend = (day === 0 || day === 6);
+    if (isWeekend) {
+        tIdx = (hour >= 10 && hour < 18) ? 1 : 0; 
+    } else {
+        if      (hour >= 7  && hour < 9)  tIdx = seed % 2 === 0 ? 2 : 3; 
+        else if (hour >= 17 && hour < 20) tIdx = seed % 2 === 0 ? 2 : 3; 
+        else if (hour >= 9  && hour < 17) tIdx = 1; 
+        else                              tIdx = 0; 
+    }
+    const traffic = TRAFFICS[tIdx];
+
+    const finalWeather = window.adminWeatherOverride || weather;
+    return { weather: finalWeather, traffic };
+}
+
+function updateMapConditionsUI() {
+    const cond = getSystemConditions();
+
+    const WEATHER_META = {
+        clear:  { icon: 'sunny',          text: 'Clear',   cls: 'text-amber-500'  },
+        cloudy: { icon: 'cloud',           text: 'Cloudy',  cls: 'text-gray-500'   },
+        rain:   { icon: 'rainy',           text: 'Rain',    cls: 'text-blue-500'   },
+        snow:   { icon: 'ac_unit',         text: 'Snow',    cls: 'text-sky-400'    },
+        fog:    { icon: 'foggy',           text: 'Fog',     cls: 'text-gray-400'   },
+        wind:   { icon: 'air',             text: 'Windy',   cls: 'text-teal-500'   },
+    };
+    const TRAFFIC_META = {
+        low:       { icon: 'traffic', text: 'Low',       cls: 'text-green-500'  },
+        moderate:  { icon: 'traffic', text: 'Moderate',  cls: 'text-amber-500'  },
+        high:      { icon: 'traffic', text: 'High',      cls: 'text-orange-500' },
+        congested: { icon: 'traffic', text: 'Congested', cls: 'text-metrored-500' },
+    };
+
+    const wm = WEATHER_META[cond.weather] || WEATHER_META.clear;
+    const tm = TRAFFIC_META[cond.traffic] || TRAFFIC_META.low;
+
+    const wIcon = document.getElementById('map-weather-icon');
+    const wText = document.getElementById('map-weather-text');
+    const tIcon = document.getElementById('map-traffic-icon');
+    const tText = document.getElementById('map-traffic-text');
+
+    if (wIcon) { wIcon.textContent = wm.icon; wIcon.className = `material-symbols-outlined text-[24px] ${wm.cls}`; }
+    if (wText) { wText.textContent = wm.text; }
+    if (tIcon) { tIcon.textContent = tm.icon; tIcon.className = `material-symbols-outlined text-[24px] ${tm.cls}`; }
+    if (tText) { tText.textContent = tm.text; }
+
+    applyWeatherEffects(cond.weather);
+}
+
+function generateAlgorithmicMock(endpoint, body) {
+    const { line_id, hour_of_day, weather_condition, traffic_level } = body;
+
+    if (endpoint.includes('predict-crowd')) {
+        let base = 15;
+        if ((hour_of_day >= 7 && hour_of_day <= 9) || (hour_of_day >= 16 && hour_of_day <= 18)) base += 35;
+        if (weather_condition === 'rain')  base = Math.round(base * 1.2);
+        if (weather_condition === 'snow')  base = Math.round(base * 1.4);
+        return {
+            line_id,
+            predicted_passengers: Math.max(0, base + Math.floor(Math.random() * 10 - 3)),
+            source: 'Algorithmic fallback (CSV unavailable)',
+        };
+    }
+
+    if (endpoint.includes('predict-arrival')) {
+        let delay = 1.5;
+        if (traffic_level  === 'moderate')  delay += 2;
+        if (traffic_level  === 'high')      delay += 5;
+        if (traffic_level  === 'congested') delay += 9;
+        if (weather_condition === 'rain')   delay += 2;
+        if (weather_condition === 'snow')   delay += 4;
+        delay = Math.max(0, delay + (Math.random() * 2 - 1));
+        const worst = delay + 2 + Math.random() * 3;
+        return {
+            line_id,
+            predicted_delay_min:  Math.round(delay * 10) / 10,
+            is_delayed:           delay > 2.0,
+            confidence_window:    `${Math.max(0, Math.round(delay))} – ${Math.round(worst)} mins`,
+            ai_reasoning:         'Algorithmic fallback (CSV unavailable)',
+            status:               'Normal',
+            weather_source:       'Heuristic',
+        };
+    }
+
+    return {};
+}
+
+// =============================================================================
+// ADMIN WEATHER CONTROL
+// =============================================================================
+function setAdminWeather(weather) {
+    window.adminWeatherOverride = weather;
+    document.querySelectorAll('.admin-weather-btn').forEach(btn => {
+        const active = btn.dataset.weather === weather;
+        btn.classList.remove('bg-metroblue-600','text-white','bg-gray-100','dark:bg-gray-700','text-gray-700','dark:text-gray-300');
+        if (active) { btn.classList.add('bg-metroblue-600','text-white'); }
+        else        { btn.classList.add('bg-gray-100','dark:bg-gray-700','text-gray-700','dark:text-gray-300'); }
+    });
+    applyWeatherEffects(weather);
+    const lbl = document.getElementById('admin-weather-active-label');
+    if (lbl) lbl.textContent = weather.toUpperCase();
+    showToast('Weather set to ' + weather.toUpperCase(), 'info');
 }
 </script>
 </body>
