@@ -177,8 +177,8 @@
       <button onclick="switchTab('planner')" id="nav-planner" class="nav-item h-full px-4 flex items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
         Network Explorer
       </button>
-      <button onclick="switchTab('achievements')" id="nav-achievements" class="hidden nav-item h-full px-4 items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
-        Achievements
+      <button onclick="switchTab('achievements')" id="nav-achievements" class="nav-item h-full px-4 flex items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+        Leaderboard
       </button>
       <button onclick="switchTab('dashboard')" id="nav-dashboard" class="hidden nav-item h-full px-4 items-center gap-2 border-b-4 border-transparent text-gray-500 hover:text-metroblue-600 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
         Dashboard
@@ -210,7 +210,7 @@
     <button onclick="switchTab('predictor')" id="nav-predictor-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-metroblue-600 dark:text-white border-b-4 border-metrored-500 transition-colors">Live Times</button>
     <button onclick="switchTab('map')" id="nav-map-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Map</button>
     <button onclick="switchTab('planner')" id="nav-planner-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Explorer</button>
-    <button onclick="switchTab('achievements')" id="nav-achievements-mobile" class="hidden nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Trophies</button>
+    <button onclick="switchTab('achievements')" id="nav-achievements-mobile" class="nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Trophies</button>
     <button onclick="switchTab('dashboard')" id="nav-dashboard-mobile" class="hidden nav-item-mobile flex-1 py-3 px-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b-4 border-transparent transition-colors">Dash</button>
   </div>
 </header>
@@ -252,7 +252,7 @@
                   <option value="">Loading stations...</option>
                 </select>
               </div>
-              <button id="btn-toggle-fav" onclick="toggleFavorite()" class="w-14 h-[52px] bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl flex items-center justify-center text-gray-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-all shadow-sm" title="Save to Favorites">
+              <button id="btn-toggle-fav" onclick="toggleFavorite()" class="w-14 h-[52px] hidden bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl items-center justify-center text-gray-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-all shadow-sm" title="Save to Favorites">
                  <span class="material-symbols-outlined text-[26px] transition-transform hover:scale-110" id="fav-icon">star</span>
               </button>
             </div>
@@ -396,11 +396,40 @@
 
 <div id="page-achievements" class="page">
   <div class="mb-8 border-l-8 border-metrored-500 pl-5">
-    <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Commuter Achievements</h1>
-    <p class="text-base font-medium text-gray-500 dark:text-gray-400 mt-2">Unlock badges by contributing to the Sivas transit community.</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-extrabold text-metroblue-900 dark:text-white uppercase tracking-tight">Leaderboard & Trophies</h1>
+    <p class="text-base font-medium text-gray-500 dark:text-gray-400 mt-2">Compete with the community and unlock badges by riding.</p>
   </div>
-  <div id="top-achiever-banner" class="mb-8 hidden"></div>
-  <div id="achievements-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-1">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-solid border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
+            <div class="bg-metroblue-900 text-white p-6 border-b-4 border-amber-500">
+                <h2 class="text-xl font-display font-extrabold flex items-center gap-2 uppercase tracking-wide">
+                    <span class="material-symbols-outlined text-amber-500">social_leaderboard</span> Top Commuters
+                </h2>
+                <p class="text-xs text-blue-200 mt-1 uppercase tracking-widest font-bold">Ranked by Trophy Points</p>
+            </div>
+            <div id="leaderboard-list" class="p-0">
+                </div>
+        </div>
+    </div>
+    
+    <div class="lg:col-span-2">
+        <div id="auth-prompt-banner" class="hidden bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h3 class="text-amber-800 dark:text-amber-400 font-extrabold uppercase tracking-widest text-sm">Want to join the leaderboard?</h3>
+                <p class="text-xs text-amber-700 dark:text-amber-500 font-medium mt-1">Log in or register an account to start earning points for your trips.</p>
+            </div>
+            <button onclick="toggleAuth()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors shadow-sm flex-shrink-0">
+                Sign In
+            </button>
+        </div>
+        
+        <h2 class="text-lg font-extrabold text-metroblue-800 dark:text-white uppercase border-b-2 border-gray-100 dark:border-gray-700 pb-3 mb-6">Available Trophies</h2>
+        <div id="achievements-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            </div>
+    </div>
+  </div>
 </div>
 
 <div id="page-dashboard" class="page">
@@ -558,6 +587,25 @@
 <script>
 // --- INITIALIZATION & GLOBALS ---
 let isDarkMode = false;
+
+// Seed dummy users to make the public leaderboard look good
+if (!localStorage.getItem('sivas_users')) {
+    let dummyUsers = {
+        'SivasRider99': { role: 'user', unlockedAchievements: ['a1', 'a4', 'a10', 'a14', 'a20'], rideCount: 14 },
+        'TransitKing': { role: 'user', unlockedAchievements: ['a1', 'a2', 'a4', 'a5', 'a6', 'a9', 'a13', 'a18'], rideCount: 38 },
+        'NightOwlSivas': { role: 'user', unlockedAchievements: ['a1', 'a15', 'a12'], rideCount: 5 }
+    };
+    localStorage.setItem('sivas_users', JSON.stringify(dummyUsers));
+    
+    // Seed dummy reports so users have report counts
+    let dummyReports = [
+        { id: '1', reporter: 'TransitKing', station: 'Hastane', desc: 'Delay seen', status: 'verified', lat: 39.75, lng: 37.01 },
+        { id: '2', reporter: 'TransitKing', station: 'Merkez', desc: 'Crowded', status: 'verified', lat: 39.76, lng: 37.02 },
+        { id: '3', reporter: 'SivasRider99', station: 'Kampus', desc: 'Snow delay', status: 'verified', lat: 39.77, lng: 37.03 }
+    ];
+    localStorage.setItem('sivas_reports', JSON.stringify(dummyReports));
+}
+
 let currentUser = JSON.parse(localStorage.getItem('sivas_user') || 'null');
 let registeredUsers = JSON.parse(localStorage.getItem('sivas_users') || '{}');
 let appReports = JSON.parse(localStorage.getItem('sivas_reports') || '[]');
@@ -605,73 +653,21 @@ window.getActiveDetoursHash = function(simTime) {
                      .map(r => r.id).sort().join(',');
 };
 
-// --- DATASET INTEGRATION ENGINE ---
-window.CSV_DB = {
-    passengerFlow: null,
-    stopArrivals: null
-};
-
+// --- DYNAMIC DATASET INTEGRATION ENGINE ---
+window.CSV_DB = { passengerFlow: null, stopArrivals: null };
 window.DATA = { lineNames: {}, stopsByLine: {} };
 window.LINE_WAYPOINTS = {};
 window.STOP_META = {};  
 window.adminWeatherOverride = null; 
 
-async function loadNetworkFromCSV() {
-    try {
-        const res = await fetch('/data/bus_stops.csv');
-        if (!res.ok) throw new Error('HTTP ' + res.status + ' loading bus_stops.csv');
-
-        const text = await res.text();
-        const rows = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
-
-        const allRows = rows.slice(1).map(row => {
-            const vals = row.split(',');
-            const obj = {};
-            headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim().replace(/"/g, ''); });
-            return obj;
-        }).filter(obj => obj.line_id);
-
-        allRows.sort((a, b) =>
-            a.line_id.localeCompare(b.line_id) ||
-            parseInt(a.stop_sequence || 0) - parseInt(b.stop_sequence || 0)
-        );
-
-        allRows.forEach(obj => {
-            const lid = obj.line_id;
-            const sid = obj.stop_id;
-            const lat = parseFloat(obj.latitude);
-            const lon = parseFloat(obj.longitude);
-
-            if (!window.DATA.lineNames[lid])    window.DATA.lineNames[lid]    = obj.line_name || ('Line ' + lid);
-            if (!window.DATA.stopsByLine[lid])  window.DATA.stopsByLine[lid]  = [];
-            if (sid && !window.DATA.stopsByLine[lid].includes(sid)) window.DATA.stopsByLine[lid].push(sid);
-            if (sid) window.STOP_META[sid] = { stop_sequence: parseInt(obj.stop_sequence)||1, stop_type: obj.stop_type||'regular', line_id: lid };
-
-            if (!window.LINE_WAYPOINTS[lid]) window.LINE_WAYPOINTS[lid] = [];
-            if (!isNaN(lat) && !isNaN(lon))  window.LINE_WAYPOINTS[lid].push([lat, lon]);
-        });
-
-    } catch (e) {
-        console.error('Failed to load bus_stops.csv — dropdowns will be empty:', e);
-    }
-}
-
-
-async function loadCSVData() {
-    if (!window.CSV_DB.passengerFlow) {
-        try {
-            const res = await fetch('/data/passenger_flow.csv');
-            if(res.ok) window.CSV_DB.passengerFlow = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load passenger_flow.csv"); }
-    }
-    if (!window.CSV_DB.stopArrivals) {
-        try {
-            const res = await fetch('/data/stop_arrivals.csv');
-            if(res.ok) window.CSV_DB.stopArrivals = parseCSV(await res.text());
-        } catch(e) { console.warn("Failed to load stop_arrivals.csv"); }
-    }
-}
+// Dynamic Threshold Variables Populated from CSVs
+window.CSV_LINE_SPEED = {};
+window.CSV_WEATHER_SPEED = {};
+window.CSV_HOUR_CROWD = {};
+window.CSV_WEATHER_CROWD = {};
+window.CSV_CROWD_P25 = 20;
+window.CSV_CROWD_P50 = 40;
+window.CSV_CROWD_P75 = 60;
 
 function parseCSV(text) {
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -680,11 +676,85 @@ function parseCSV(text) {
     return lines.slice(1).map(line => {
         const vals = line.split(',');
         let obj = {};
-        headers.forEach((h, i) => {
-            obj[h] = vals[i] ? vals[i].trim().replace(/"/g, '') : '';
-        });
+        headers.forEach((h, i) => { obj[h] = vals[i] ? vals[i].trim().replace(/"/g, '') : ''; });
         return obj;
     });
+}
+
+async function loadCSVData() {
+    // 1. Process Passenger Flow for Crowd Percentiles & Hourly Mocks
+    if (!window.CSV_DB.passengerFlow) {
+        try {
+            const res = await fetch('/data/passenger_flow.csv');
+            if(res.ok) {
+                window.CSV_DB.passengerFlow = parseCSV(await res.text());
+                let pax = window.CSV_DB.passengerFlow.map(d => parseFloat(d.avg_passengers_waiting||0)).sort((a,b)=>a-b);
+                if (pax.length > 0) {
+                    window.CSV_CROWD_P25 = pax[Math.floor(pax.length * 0.25)];
+                    window.CSV_CROWD_P50 = pax[Math.floor(pax.length * 0.50)];
+                    window.CSV_CROWD_P75 = pax[Math.floor(pax.length * 0.75)];
+                    
+                    let byHour = {}; let byWeath = {};
+                    window.CSV_DB.passengerFlow.forEach(d => {
+                        if(!byHour[d.hour_of_day]) byHour[d.hour_of_day] = [];
+                        byHour[d.hour_of_day].push(parseFloat(d.avg_passengers_waiting||0));
+                        if(!byWeath[d.weather_condition]) byWeath[d.weather_condition] = [];
+                        byWeath[d.weather_condition].push(parseFloat(d.avg_passengers_waiting||0));
+                    });
+                    for(let h in byHour) window.CSV_HOUR_CROWD[h] = byHour[h].reduce((a,b)=>a+b,0)/byHour[h].length;
+                    
+                    let totalAvg = pax.reduce((a,b)=>a+b,0)/pax.length;
+                    for(let w in byWeath) window.CSV_WEATHER_CROWD[w] = (byWeath[w].reduce((a,b)=>a+b,0)/byWeath[w].length) / totalAvg;
+                }
+            }
+        } catch(e) { console.warn("Failed to load passenger_flow.csv"); }
+    }
+    
+    // 2. Process Stop Arrivals for Dynamic Map Animation Speeds
+    if (!window.CSV_DB.stopArrivals) {
+        try {
+            const res = await fetch('/data/stop_arrivals.csv');
+            if(res.ok) {
+                window.CSV_DB.stopArrivals = parseCSV(await res.text());
+                let byLine = {}; let byWeath = {}; let speeds = [];
+                window.CSV_DB.stopArrivals.forEach(d => {
+                    let sf = parseFloat(d.speed_factor||1.0);
+                    if(sf <= 0) return;
+                    speeds.push(sf);
+                    if(!byLine[d.line_id]) byLine[d.line_id] = [];
+                    byLine[d.line_id].push(sf);
+                    if(!byWeath[d.weather_condition]) byWeath[d.weather_condition] = [];
+                    byWeath[d.weather_condition].push(sf);
+                });
+                if (speeds.length > 0) {
+                    let totalAvg = speeds.reduce((a,b)=>a+b,0)/speeds.length;
+                    for(let l in byLine) window.CSV_LINE_SPEED[l] = byLine[l].reduce((a,b)=>a+b,0)/byLine[l].length;
+                    for(let w in byWeath) window.CSV_WEATHER_SPEED[w] = (byWeath[w].reduce((a,b)=>a+b,0)/byWeath[w].length) / totalAvg;
+                }
+            }
+        } catch(e) { console.warn("Failed to load stop_arrivals.csv"); }
+    }
+}
+
+async function loadNetworkFromCSV() {
+    try {
+        const res = await fetch('/data/bus_stops.csv');
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' loading bus_stops.csv');
+        const text = await res.text();
+        const allRows = parseCSV(text).filter(obj => obj.line_id);
+
+        allRows.sort((a, b) => a.line_id.localeCompare(b.line_id) || parseInt(a.stop_sequence || 0) - parseInt(b.stop_sequence || 0));
+
+        allRows.forEach(obj => {
+            const lid = obj.line_id; const sid = obj.stop_id; const lat = parseFloat(obj.latitude); const lon = parseFloat(obj.longitude);
+            if (!window.DATA.lineNames[lid])    window.DATA.lineNames[lid]    = obj.line_name || ('Line ' + lid);
+            if (!window.DATA.stopsByLine[lid])  window.DATA.stopsByLine[lid]  = [];
+            if (sid && !window.DATA.stopsByLine[lid].includes(sid)) window.DATA.stopsByLine[lid].push(sid);
+            if (sid) window.STOP_META[sid] = { stop_sequence: parseInt(obj.stop_sequence)||1, stop_type: obj.stop_type||'regular', line_id: lid };
+            if (!window.LINE_WAYPOINTS[lid]) window.LINE_WAYPOINTS[lid] = [];
+            if (!isNaN(lat) && !isNaN(lon))  window.LINE_WAYPOINTS[lid].push([lat, lon]);
+        });
+    } catch (e) { console.error('Failed to load bus_stops.csv — dropdowns will be empty:', e); }
 }
 
 async function queryDataset(endpoint, body) {
@@ -696,20 +766,11 @@ async function queryDataset(endpoint, body) {
         if (flowData.length > 0) {
             let matches = flowData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
             if (matches.length === 0) matches = flowData.filter(d => d.line_id === line_id);
-            
             if (matches.length > 0) {
-                let totalWait = 0;
-                matches.forEach(m => totalWait += parseFloat(m.avg_passengers_waiting || 0));
-                let avg = totalWait / matches.length;
-                
+                let avg = matches.reduce((acc, m) => acc + parseFloat(m.avg_passengers_waiting || 0), 0) / matches.length;
                 if (weather_condition === 'rain') avg *= 1.2;
                 if (weather_condition === 'snow') avg *= 1.4;
-                
-                return { 
-                    line_id, 
-                    predicted_passengers: Math.max(0, Math.round(avg)),
-                    source: `Aggregated from ${matches.length} historical flow records`
-                };
+                return { line_id, predicted_passengers: Math.max(0, Math.round(avg)), source: `Aggregated from ${matches.length} historical flow records` };
             }
         }
     }
@@ -719,34 +780,35 @@ async function queryDataset(endpoint, body) {
         if (arrData.length > 0) {
             let matches = arrData.filter(d => d.line_id === line_id && parseInt(d.hour_of_day) === parseInt(hour_of_day));
             if (matches.length === 0) matches = arrData.filter(d => d.line_id === line_id); 
-            
             if (matches.length > 0) {
-                let totalDelay = 0;
-                matches.forEach(m => totalDelay += parseFloat(m.delay_min || 0));
-                let avgDelay = totalDelay / matches.length;
-                
-                if (traffic_level === 'high') avgDelay += 5;
-                else if (traffic_level === 'moderate') avgDelay += 2;
-                if (weather_condition === 'snow') avgDelay += 4;
-                if (weather_condition === 'rain') avgDelay += 2;
-                
+                let avgDelay = matches.reduce((acc, m) => acc + parseFloat(m.delay_min || 0), 0) / matches.length;
+                if (traffic_level === 'high') avgDelay += 5; else if (traffic_level === 'moderate') avgDelay += 2;
+                if (weather_condition === 'snow') avgDelay += 4; if (weather_condition === 'rain') avgDelay += 2;
                 avgDelay = Math.max(0, avgDelay);
                 let isGhost = avgDelay > 10 && Math.random() > 0.8;
-
                 return {
-                    line_id,
-                    predicted_delay_min: avgDelay,
-                    status: isGhost ? "⚠️ ANOMALY: Ghost Bus suspected" : "Normal",
-                    is_delayed: avgDelay > 2.0 || isGhost,
-                    confidence_window: `${Math.max(0, Math.round(avgDelay-1))} - ${Math.round(avgDelay+2)} mins`,
-                    ai_reasoning: `Matched ${matches.length} historic trips for ${hour_of_day}:00`,
-                    weather_source: "Live Data Analysis"
+                    line_id, predicted_delay_min: avgDelay, status: isGhost ? "⚠️ ANOMALY: Ghost Bus suspected" : "Normal",
+                    is_delayed: avgDelay > 2.0 || isGhost, confidence_window: `${Math.max(0, Math.round(avgDelay-1))} - ${Math.round(avgDelay+2)} mins`,
+                    ai_reasoning: `Matched ${matches.length} historic trips for ${hour_of_day}:00`, weather_source: "Live Data Analysis"
                 };
             }
         }
     }
     
     return generateAlgorithmicMock(endpoint, body);
+}
+
+function getLineSpeedMult(lineId, weather) {
+    let base = window.CSV_LINE_SPEED[lineId] || window.CSV_LINE_SPEED[lineId.substring(0,3)] || 1.0;
+    let wMult = window.CSV_WEATHER_SPEED[weather] || 1.0;
+    return base * wMult;
+}
+
+function crowdLabel(passengers) {
+    if (passengers >= window.CSV_CROWD_P75) return { label: 'Very Crowded', color: 'text-metrored-500' };
+    if (passengers >= window.CSV_CROWD_P50) return { label: 'Crowded',      color: 'text-orange-500'   };
+    if (passengers >= window.CSV_CROWD_P25) return { label: 'Moderate',     color: 'text-amber-500'    };
+    return                                  { label: 'Quiet',         color: 'text-green-500'    };
 }
 
 function toggleTheme() {
@@ -767,21 +829,12 @@ function toggleTheme() {
 function showToast(msg, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    const colors = {
-        'success': 'bg-green-600 text-white',
-        'error': 'bg-metrored-600 text-white',
-        'info': 'bg-metroblue-600 text-white'
-    };
+    const colors = { 'success': 'bg-green-600 text-white', 'error': 'bg-metrored-600 text-white', 'info': 'bg-metroblue-600 text-white' };
     toast.className = `px-5 py-4 rounded-2xl shadow-heavy text-xs font-extrabold tracking-widest uppercase flex items-center gap-3 pointer-events-auto transform transition-all translate-y-full opacity-0 ${colors[type] || colors.info}`;
     toast.innerHTML = `<span class="material-symbols-outlined text-[20px]">${type==='success'?'check_circle':type==='error'?'error':'info'}</span> ${msg}`;
     container.appendChild(toast);
-    
     setTimeout(() => { toast.classList.remove('translate-y-full', 'opacity-0'); }, 10);
-    
-    setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-full');
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-full'); setTimeout(() => toast.remove(), 300); }, 4000);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -806,11 +859,7 @@ function initServiceAlerts() {
   const activeDetours = appReports.filter(r => r.status === 'rerouted' && r.lat && r.lng && r.expiresAt > simTime);
   if (activeDetours.length > 0) alerts.push(`<span class="text-amber-500 font-black">DYNAMIC DETOURS:</span> ${activeDetours.length} ROUTES HAVE BEEN ADJUSTED TO AVOID MAP INCIDENTS.`);
 
-  alerts.push(
-    "L02 Line is currently experiencing minor delays due to roadwork near Hastane.",
-    "Expect heavy ridership across all lines between 17:00 and 19:00 today.",
-    "Weather Advisory: Adjusting schedules for expected conditions."
-  );
+  alerts.push("L02 Line is currently experiencing minor delays due to roadwork near Hastane.", "Expect heavy ridership across all lines between 17:00 and 19:00 today.");
   const tickerStr = alerts.join(" &nbsp; • &nbsp; ");
   document.getElementById('alert-ticker').innerHTML = tickerStr + " &nbsp; • &nbsp; " + tickerStr;
 }
@@ -841,16 +890,12 @@ function applyWeatherEffects(weather) {
 
 // --- MAP INCIDENT REPORTING LOGIC ---
 function findNearestStation(lat, lng) {
-    let minD = Infinity;
-    let nearest = "Unknown Area";
-    const target = L.latLng(lat, lng);
+    let minD = Infinity; let nearest = "Unknown Area"; const target = L.latLng(lat, lng);
     for (const id in window.DATA.stopsByLine) {
         if(!window.cachedLineCoords[id]) continue;
         window.DATA.stopsByLine[id].forEach((s, i) => {
-            const c = window.cachedLineCoords[id].stops[i];
-            if(!c) return;
-            const d = window.liveMap.distance(target, c);
-            if (d < minD) { minD = d; nearest = s; }
+            const c = window.cachedLineCoords[id].stops[i]; if(!c) return;
+            const d = window.liveMap.distance(target, c); if (d < minD) { minD = d; nearest = s; }
         });
     }
     return nearest;
@@ -862,13 +907,11 @@ window.openMapReportModal = function(lat, lng) {
     let nearest = findNearestStation(lat, lng);
     document.getElementById('map-report-coords').textContent = `LAT: ${lat.toFixed(4)}, LNG: ${lng.toFixed(4)} (NEAR: ${nearest})`;
     document.getElementById('map-report-desc').value = '';
-    document.getElementById('map-report-modal').classList.remove('hidden');
-    document.getElementById('map-report-modal').classList.add('flex');
+    document.getElementById('map-report-modal').classList.remove('hidden'); document.getElementById('map-report-modal').classList.add('flex');
 }
 
 function closeMapReportModal() {
-    document.getElementById('map-report-modal').classList.add('hidden');
-    document.getElementById('map-report-modal').classList.remove('flex');
+    document.getElementById('map-report-modal').classList.add('hidden'); document.getElementById('map-report-modal').classList.remove('flex');
     currentMapReportCoords = null;
 }
 
@@ -876,28 +919,18 @@ function submitMapReport() {
     if (!currentUser || !currentMapReportCoords) return;
     const desc = document.getElementById('map-report-desc').value.trim();
     if (!desc) { showToast("Please enter a description.", "error"); return; }
-
     let nearestStation = findNearestStation(currentMapReportCoords.lat, currentMapReportCoords.lng);
     let locString = `MAP [${currentMapReportCoords.lat.toFixed(4)}, ${currentMapReportCoords.lng.toFixed(4)}]`;
 
     appReports.unshift({
-        id: Date.now().toString(),
-        reporter: currentUser.username,
-        station: locString,
-        nearest_station: nearestStation,
-        desc: desc,
-        status: 'pending',
-        lat: currentMapReportCoords.lat,
-        lng: currentMapReportCoords.lng
+        id: Date.now().toString(), reporter: currentUser.username, station: locString,
+        nearest_station: nearestStation, desc: desc, status: 'pending', lat: currentMapReportCoords.lat, lng: currentMapReportCoords.lng
     });
     
     localStorage.setItem('sivas_reports', JSON.stringify(appReports));
     awardAchievement(currentUser.username, 'a2');
-    closeMapReportModal();
-    renderDashboard();
-    
+    closeMapReportModal(); renderDashboard();
     showToast("Map incident reported successfully.", "success");
-
     if(window.liveMap) loadLiveMap(window.activeRouteMeta);
 }
 
@@ -914,7 +947,10 @@ function toggleAuth() {
 }
 
 function closeLogoutModal() { document.getElementById('logout-modal').classList.add('hidden'); document.getElementById('logout-modal').classList.remove('flex'); }
-function confirmLogout() { currentUser = null; localStorage.removeItem('sivas_user'); updateAuthUI(); closeLogoutModal(); showToast("Signed out", "info"); }
+function confirmLogout() { 
+    currentUser = null; localStorage.removeItem('sivas_user'); updateAuthUI(); closeLogoutModal(); showToast("Signed out", "info"); 
+    if(document.getElementById('page-achievements').classList.contains('active')) renderAchievementsPage();
+}
 function closeLoginModal() {
   document.getElementById('login-modal').classList.add('hidden'); document.getElementById('login-modal').classList.remove('flex');
   document.getElementById('auth-form').reset(); document.getElementById('auth-error').classList.add('hidden'); document.getElementById('auth-success').classList.add('hidden');
@@ -954,11 +990,8 @@ function demoAdminLogin() {
     registeredUsers[username] = { password: '123', role: 'admin', favorites: [], unlockedAchievements: [] };
     localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
   }
-  currentUser = { username, role: 'admin' };
-  localStorage.setItem('sivas_user', JSON.stringify(currentUser));
-  closeLoginModal();
-  updateAuthUI();
-  showToast("Admin access granted", "success");
+  currentUser = { username, role: 'admin' }; localStorage.setItem('sivas_user', JSON.stringify(currentUser));
+  closeLoginModal(); updateAuthUI(); showToast("Admin access granted", "success");
 }
 
 function handleAuth(e) {
@@ -970,8 +1003,7 @@ function handleAuth(e) {
     if (registeredUsers[username].password !== password) return showAuthError("Incorrect password.");
     currentUser = { username, role: registeredUsers[username].role };
     localStorage.setItem('sivas_user', JSON.stringify(currentUser));
-    closeLoginModal(); updateAuthUI();
-    showToast(`Welcome back, ${username}!`, "success");
+    closeLoginModal(); updateAuthUI(); showToast(`Welcome back, ${username}!`, "success");
   } else {
     const confirmPass = document.getElementById('auth-confirm').value;
     if (password !== confirmPass) return showAuthError("Passwords do not match.");
@@ -987,7 +1019,6 @@ function updateAuthUI() {
   const btnText = document.getElementById('auth-text'); const btnIcon = document.getElementById('auth-icon'); const btn = document.getElementById('auth-btn');
   const favBtn = document.getElementById('btn-toggle-fav'); const settingsBtn = document.getElementById('settings-btn');
   const navDash = document.getElementById('nav-dashboard'); const navDashMobile = document.getElementById('nav-dashboard-mobile');
-  const navAch = document.getElementById('nav-achievements'); const navAchMobile = document.getElementById('nav-achievements-mobile');
   
   if (currentUser) {
     let badge = ''; let displayName = currentUser.username; const userProfile = registeredUsers[currentUser.username];
@@ -1008,19 +1039,18 @@ function updateAuthUI() {
     if (favBtn) { favBtn.classList.remove('hidden'); favBtn.classList.add('flex'); }
     if (settingsBtn) { settingsBtn.classList.remove('hidden'); settingsBtn.classList.add('flex'); }
     navDash.classList.remove('hidden'); navDash.classList.add('flex'); navDashMobile.classList.remove('hidden'); navDashMobile.classList.add('flex');
-    navAch.classList.remove('hidden'); navAch.classList.add('flex'); navAchMobile.classList.remove('hidden'); navAchMobile.classList.add('flex');
     navDash.textContent = currentUser.role === 'admin' ? 'Admin Panel' : 'Report Issue'; navDashMobile.textContent = currentUser.role === 'admin' ? 'Admin' : 'Report';
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
-    if (document.getElementById('page-achievements').classList.contains('active')) renderAchievementsPage();
   } else {
     btn.className = "flex items-center gap-1.5 px-4 py-2 bg-metroblue-600 hover:bg-metroblue-700 text-white text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl transition-transform hover:-translate-y-0.5 shadow-md";
     btnIcon.className = "material-symbols-outlined text-[18px]"; btnIcon.innerHTML = 'login'; btnText.textContent = 'Login'; btnText.className = 'hidden sm:inline';
     if (favBtn) { favBtn.classList.add('hidden'); favBtn.classList.remove('flex'); }
     if (settingsBtn) { settingsBtn.classList.add('hidden'); settingsBtn.classList.remove('flex'); }
     navDash.classList.add('hidden'); navDash.classList.remove('flex'); navDashMobile.classList.add('hidden'); navDashMobile.classList.remove('flex');
-    navAch.classList.add('hidden'); navAch.classList.remove('flex'); navAchMobile.classList.add('hidden'); navAchMobile.classList.remove('flex');
-    if (document.getElementById('page-dashboard').classList.contains('active') || document.getElementById('page-achievements').classList.contains('active')) switchTab('predictor');
+    if (document.getElementById('page-dashboard').classList.contains('active')) switchTab('predictor');
   }
+  
+  if (document.getElementById('page-achievements').classList.contains('active')) renderAchievementsPage();
   renderFavorites();
 }
 
@@ -1040,12 +1070,9 @@ function renderDashboard() {
     const trafficColor = cond.traffic === 'low' ? 'text-green-500' : (cond.traffic === 'moderate' ? 'text-amber-500' : 'text-metrored-500');
 
     const WEATHER_BTNS = [
-        {key:'clear', icon:'sunny', label:'Clear'},
-        {key:'cloudy',icon:'cloud', label:'Cloudy'},
-        {key:'rain',  icon:'rainy', label:'Rain'},
-        {key:'snow',  icon:'ac_unit',label:'Snow'},
-        {key:'fog',   icon:'foggy', label:'Fog'},
-        {key:'wind',  icon:'air',   label:'Wind'},
+        {key:'clear', icon:'sunny', label:'Clear'}, {key:'cloudy',icon:'cloud', label:'Cloudy'},
+        {key:'rain',  icon:'rainy', label:'Rain'}, {key:'snow',  icon:'ac_unit',label:'Snow'},
+        {key:'fog',   icon:'foggy', label:'Fog'}, {key:'wind',  icon:'air',   label:'Wind'},
     ];
     const weatherPanelHtml = `
     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-solid border border-gray-100 dark:border-gray-700 p-6 mb-6">
@@ -1079,17 +1106,12 @@ function renderDashboard() {
     let reportsHtml = pendingReports.length === 0 ? `<p class="p-6 text-sm text-gray-500 font-bold uppercase tracking-widest text-center">No pending reports.</p>` : pendingReports.map(r => {
       let actions = '';
       if (r.lat && r.lng) {
-          actions = `
-             <button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
-             <button onclick="openRerouteModal('${r.id}')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Reroute</button>
-          `;
+          actions = `<button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
+                     <button onclick="openRerouteModal('${r.id}')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Reroute</button>`;
       } else {
-          actions = `
-             <button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
-             <button onclick="resolveReport('${r.id}', 'verified')" class="px-4 py-2 bg-metrored-500 hover:bg-metrored-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Close Station</button>
-          `;
+          actions = `<button onclick="resolveReport('${r.id}', 'rejected')" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-sm">Dismiss</button>
+                     <button onclick="resolveReport('${r.id}', 'verified')" class="px-4 py-2 bg-metrored-500 hover:bg-metrored-600 text-white text-xs font-extrabold rounded-xl uppercase tracking-wider transition-colors shadow-md hover:-translate-y-0.5">Close Station</button>`;
       }
-      
       return `
       <div class="p-5 border border-red-100 bg-red-50/50 dark:bg-red-900/10 rounded-2xl mb-4 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
         ${r.lat ? `<div class="absolute -right-8 top-4 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest px-10 py-1 rotate-45 shadow-md">MAP</div>` : ''}
@@ -1101,104 +1123,40 @@ function renderDashboard() {
            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-extrabold">By: ${r.reporter}</span>
            <div class="flex gap-2">${actions}</div>
         </div>
-      </div>
-      `;
+      </div>`;
     }).join('');
 
     content.innerHTML = weatherPanelHtml + `
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
-             <div>
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Users</p>
-                <p class="text-3xl font-black text-metroblue-900 dark:text-white">${totalUsers}</p>
-             </div>
-             <div class="w-12 h-12 rounded-full bg-metroblue-50 dark:bg-gray-700 flex items-center justify-center">
-                 <span class="material-symbols-outlined text-2xl text-metroblue-600 dark:text-gray-400">group</span>
-             </div>
+             <div><p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Total Users</p><p class="text-3xl font-black text-metroblue-900 dark:text-white">${totalUsers}</p></div>
+             <div class="w-12 h-12 rounded-full bg-metroblue-50 dark:bg-gray-700 flex items-center justify-center"><span class="material-symbols-outlined text-2xl text-metroblue-600 dark:text-gray-400">group</span></div>
          </div>
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
-             <div>
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Pending Reports</p>
-                <p class="text-3xl font-black ${pendingCount > 0 ? 'text-metrored-500' : 'text-metroblue-900 dark:text-white'}">${pendingCount}</p>
-             </div>
-             <div class="w-12 h-12 rounded-full ${pendingCount > 0 ? 'bg-red-50 dark:bg-red-900/30' : 'bg-gray-50 dark:bg-gray-700'} flex items-center justify-center">
-                 <span class="material-symbols-outlined text-2xl ${pendingCount > 0 ? 'text-metrored-500 dark:text-metrored-400' : 'text-gray-400'}">assignment</span>
-             </div>
+             <div><p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Pending Reports</p><p class="text-3xl font-black ${pendingCount > 0 ? 'text-metrored-500' : 'text-metroblue-900 dark:text-white'}">${pendingCount}</p></div>
+             <div class="w-12 h-12 rounded-full ${pendingCount > 0 ? 'bg-red-50 dark:bg-red-900/30' : 'bg-gray-50 dark:bg-gray-700'} flex items-center justify-center"><span class="material-symbols-outlined text-2xl ${pendingCount > 0 ? 'text-metrored-500 dark:text-metrored-400' : 'text-gray-400'}">assignment</span></div>
          </div>
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
-             <div>
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Active Fleet</p>
-                <p class="text-3xl font-black text-green-600">45/45</p>
-             </div>
-             <div class="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
-                 <span class="material-symbols-outlined text-2xl text-green-600 dark:text-green-500">directions_bus</span>
-             </div>
+             <div><p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Active Fleet</p><p class="text-3xl font-black text-green-600">45/45</p></div>
+             <div class="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center"><span class="material-symbols-outlined text-2xl text-green-600 dark:text-green-500">directions_bus</span></div>
          </div>
          <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-solid flex items-center justify-between transition-transform hover:-translate-y-1">
-             <div>
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Current Traffic</p>
-                <p class="text-2xl font-black ${trafficColor} uppercase">${cond.traffic}</p>
-             </div>
-             <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
-                 <span class="material-symbols-outlined text-2xl ${trafficColor}">traffic</span>
-             </div>
+             <div><p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Current Traffic</p><p class="text-2xl font-black ${trafficColor} uppercase">${cond.traffic}</p></div>
+             <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center"><span class="material-symbols-outlined text-2xl ${trafficColor}">traffic</span></div>
          </div>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
-            <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-2 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center justify-between">
-                Resource Allocation
-                <span class="text-[10px] bg-metrored-100 text-metrored-700 dark:bg-metrored-900/30 dark:text-metrored-400 px-3 py-1 rounded-lg">OVERLOAD ALERT</span>
-            </h2>
+            <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-2 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center justify-between">Resource Allocation <span class="text-[10px] bg-metrored-100 text-metrored-700 dark:bg-metrored-900/30 dark:text-metrored-400 px-3 py-1 rounded-lg">OVERLOAD ALERT</span></h2>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-6 tracking-widest uppercase">Passenger Volume vs Bus Capacity</p>
-            <div class="relative h-[280px] w-full">
-                <canvas id="capacityChart"></canvas>
-            </div>
+            <div class="relative h-[280px] w-full"><canvas id="capacityChart"></canvas></div>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
-            <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                Congestion Forecast
-            </h2>
+            <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-2 border-b border-gray-100 dark:border-gray-700 pb-3">Congestion Forecast</h2>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-6 tracking-widest uppercase">Predictive Traffic Index (Next 12H)</p>
-            <div class="relative h-[280px] w-full">
-                <canvas id="trafficChart"></canvas>
-            </div>
+            <div class="relative h-[280px] w-full"><canvas id="trafficChart"></canvas></div>
         </div>
       </div>
-
-      <div class="mb-8 bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
-        <h2 class="text-base font-extrabold text-metroblue-800 dark:text-white uppercase mb-6 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2">
-            <span class="material-symbols-outlined text-blue-500 text-2xl">cloud</span> 4-Day Operational Weather Outlook
-        </h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-inner">
-                <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Tomorrow</div>
-                <span class="material-symbols-outlined text-5xl text-blue-500 mb-2">rainy</span>
-                <div class="text-2xl font-black dark:text-white mb-2">12°C</div>
-                <div class="text-[10px] font-extrabold text-metrored-600 uppercase tracking-widest bg-metrored-50 dark:bg-metrored-900/20 px-2 py-1 rounded-lg">High Delay Risk</div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-inner">
-                <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Wednesday</div>
-                <span class="material-symbols-outlined text-5xl text-gray-400 mb-2">cloud</span>
-                <div class="text-2xl font-black dark:text-white mb-2">14°C</div>
-                <div class="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">Moderate Risk</div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-inner">
-                <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Thursday</div>
-                <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">sunny</span>
-                <div class="text-2xl font-black dark:text-white mb-2">18°C</div>
-                <div class="text-[10px] font-extrabold text-green-600 uppercase tracking-widest bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">Optimal Ops</div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-center shadow-inner">
-                <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Friday</div>
-                <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">sunny</span>
-                <div class="text-2xl font-black dark:text-white mb-2">20°C</div>
-                <div class="text-[10px] font-extrabold text-green-600 uppercase tracking-widest bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">Optimal Ops</div>
-            </div>
-        </div>
-      </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
            <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-2xl">group</span> Registered Users</h2>
@@ -1207,55 +1165,6 @@ function renderDashboard() {
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700 border-t-8 border-t-metrored-500">
            <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-metrored-500 text-2xl">gavel</span> Incident Queue</h2>
            <div class="overflow-y-auto max-h-[500px] pr-4">${reportsHtml}</div>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
-           <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-amber-500 text-2xl">military_tech</span> Manage Achievements</h2>
-           <div class="space-y-5 mb-8">
-             <div class="grid grid-cols-2 gap-3">
-                 <input type="text" id="admin-ach-title" placeholder="Title" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-metroblue-500 focus:outline-none transition-all">
-                 <input type="text" id="admin-ach-icon" placeholder="Icon (e.g. star)" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-metroblue-500 focus:outline-none transition-all">
-                 <input type="number" id="admin-ach-points" placeholder="Points" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-metroblue-500 focus:outline-none transition-all">
-                 <input type="text" id="admin-ach-desc" placeholder="Description" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-metroblue-500 focus:outline-none transition-all">
-             </div>
-             <button onclick="createAchievement()" class="w-full py-4 bg-metroblue-600 hover:bg-metroblue-700 text-white text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-md hover:-translate-y-0.5">Create Achievement</button>
-           </div>
-           <div class="overflow-y-auto max-h-[300px] pr-2 space-y-3">
-             ${appAchievements.map(a => `
-               <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
-                 <div class="flex items-center gap-4">
-                   <div class="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm">
-                     <span class="material-symbols-outlined text-amber-500 text-[20px]">${a.icon}</span>
-                   </div>
-                   <div>
-                     <div class="text-sm font-extrabold dark:text-white">${a.title} (${a.points} pts)</div>
-                     <div class="text-[11px] text-gray-500 truncate w-40" title="${a.desc}">${a.desc}</div>
-                   </div>
-                 </div>
-                 <button onclick="deleteAchievement('${a.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-metrored-500 hover:text-metrored-700 transition-colors"><span class="material-symbols-outlined text-[20px]">delete</span></button>
-               </div>
-             `).join('')}
-           </div>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700">
-           <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-5 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-green-500 text-2xl">workspace_premium</span> Award Achievement</h2>
-           <div class="space-y-6">
-             <div>
-               <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Select User</label>
-               <select id="award-user-select" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all shadow-inner">
-                 ${Object.keys(registeredUsers).map(u => `<option value="${u}">${u}</option>`).join('')}
-               </select>
-             </div>
-             <div>
-               <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Select Achievement</label>
-               <select id="award-ach-select" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-sm font-bold dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all shadow-inner">
-                 ${appAchievements.map(a => `<option value="${a.id}">${a.title}</option>`).join('')}
-               </select>
-             </div>
-             <button onclick="awardAchievement()" class="w-full mt-2 py-4 bg-green-600 hover:bg-green-700 text-white text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-md hover:-translate-y-0.5">Award to User</button>
-           </div>
         </div>
       </div>
     `;
@@ -1284,20 +1193,9 @@ function renderDashboard() {
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-solid border border-gray-100 dark:border-gray-700 border-t-8 border-t-metrored-500">
            <h2 class="text-xl font-extrabold text-metroblue-800 dark:text-white uppercase mb-6 border-b-2 border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-3"><span class="material-symbols-outlined text-metrored-500 text-2xl">campaign</span> Report an Issue</h2>
            <div class="space-y-6">
-             <div class="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800 text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-start gap-3 shadow-inner">
-                 <span class="material-symbols-outlined text-[20px] flex-shrink-0">info</span>
-                 Tip: You can also report precise locations by clicking anywhere on the Interactive Map!
-             </div>
-             <div>
-               <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Station / Location</label>
-               <select id="report-station" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-metrored-500 transition-all cursor-pointer dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-inner">
-                 ${stopOptions}
-               </select>
-             </div>
-             <div>
-               <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Description</label>
-               <textarea id="report-desc" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-metrored-500 transition-all dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-inner resize-none" placeholder="E.g., Major accident blocking the station approach..."></textarea>
-             </div>
+             <div class="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-2xl border border-amber-200 dark:border-amber-800 text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-start gap-3 shadow-inner"><span class="material-symbols-outlined text-[20px] flex-shrink-0">info</span>Tip: You can also report precise locations by clicking anywhere on the Interactive Map!</div>
+             <div><label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Station / Location</label><select id="report-station" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-metrored-500 transition-all cursor-pointer dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-inner">${stopOptions}</select></div>
+             <div><label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Description</label><textarea id="report-desc" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-metrored-500 transition-all dark:bg-gray-900 dark:border-gray-700 dark:text-white shadow-inner resize-none" placeholder="E.g., Major accident blocking the station approach..."></textarea></div>
              <button onclick="submitReport()" class="w-full py-4 rounded-2xl bg-metrored-500 hover:bg-metrored-600 text-white font-extrabold text-sm uppercase tracking-widest transition-all hover:-translate-y-1 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-metrored-500/30">Submit Station Report</button>
            </div>
         </div>
@@ -1311,25 +1209,16 @@ function renderDashboard() {
 }
 
 async function initAdminCharts() {
-    const capCtx = document.getElementById('capacityChart');
-    const trafCtx = document.getElementById('trafficChart');
+    const capCtx = document.getElementById('capacityChart'); const trafCtx = document.getElementById('trafficChart');
     if (!capCtx || !trafCtx) return;
+    if (capacityChartInstance) capacityChartInstance.destroy(); if (trafficChartInstance) trafficChartInstance.destroy();
+    const textColor = isDarkMode ? '#9ca3af' : '#4b5563'; const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
 
-    if (capacityChartInstance) capacityChartInstance.destroy();
-    if (trafficChartInstance) trafficChartInstance.destroy();
-
-    const textColor = isDarkMode ? '#9ca3af' : '#4b5563';
-    const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
-
-    // SAFE DYNAMIC LOAD: Fetch from CSV with fallbacks
-    let loadData = [135, 80, 45, 110, 60];
-    let capacityData = [100, 100, 100, 100, 100];
-    
+    let loadData = [135, 80, 45, 110, 60]; let capacityData = [100, 100, 100, 100, 100];
     try {
         const res = await fetch('/data/bus_trips.csv');
         if (res.ok) {
-            const tripsText = await res.text();
-            const trips = parseCSV(tripsText);
+            const trips = parseCSV(await res.text());
             if (trips.length > 0) {
                 loadData = []; capacityData = [];
                 ['L01', 'L02', 'L03', 'L04', 'L05'].forEach(line => {
@@ -1337,126 +1226,47 @@ async function initAdminCharts() {
                     if(lineTrips.length > 0) {
                         let avgLoad = lineTrips.reduce((acc, t) => acc + parseFloat(t.avg_occupancy_pct || 0), 0) / lineTrips.length;
                         let cap = parseInt(lineTrips[0].bus_capacity || 100);
-                        loadData.push(Math.round((avgLoad / 100) * cap) || Math.round(avgLoad)); 
-                        capacityData.push(cap);
-                    } else {
-                        loadData.push(0); capacityData.push(100);
-                    }
+                        loadData.push(Math.round((avgLoad / 100) * cap) || Math.round(avgLoad)); capacityData.push(cap);
+                    } else { loadData.push(0); capacityData.push(100); }
                 });
             }
         }
-    } catch (e) {
-        console.warn("Failed to load dynamic chart data, using fallback.", e);
-    }
+    } catch (e) { console.warn("Failed to load dynamic chart data, using fallback.", e); }
 
     capacityChartInstance = new Chart(capCtx, {
         type: 'bar',
-        data: {
-            labels: ['L01', 'L02', 'L03', 'L04', 'L05'],
-            datasets: [
-                {
-                    label: 'Current Passenger Load',
-                    data: loadData,
-                    backgroundColor: [
-                        'rgba(227, 0, 27, 0.85)',
-                        'rgba(0, 56, 130, 0.7)', 
-                        'rgba(0, 56, 130, 0.7)', 
-                        'rgba(227, 0, 27, 0.85)',
-                        'rgba(0, 56, 130, 0.7)'
-                    ],
-                    borderWidth: 0,
-                    borderRadius: 6
-                },
-                {
-                    type: 'line',
-                    label: 'Bus Capacity Limit',
-                    data: capacityData,
-                    borderColor: isDarkMode ? '#cbd5e1' : '#334155',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    fill: false
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) label += context.parsed.y + ' Pax';
-                            if (context.dataIndex === 0 || context.dataIndex === 3) {
-                                if (context.datasetIndex === 0) label += ' (Deploy Bus!)';
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: { beginAtZero: true, max: 150, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } },
-                x: { grid: { display: false }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }
-            }
+        data: { labels: ['L01', 'L02', 'L03', 'L04', 'L05'], datasets: [
+                { label: 'Current Passenger Load', data: loadData, backgroundColor: ['rgba(227, 0, 27, 0.85)','rgba(0, 56, 130, 0.7)','rgba(0, 56, 130, 0.7)','rgba(227, 0, 27, 0.85)','rgba(0, 56, 130, 0.7)'], borderWidth: 0, borderRadius: 6 },
+                { type: 'line', label: 'Bus Capacity Limit', data: capacityData, borderColor: isDarkMode ? '#cbd5e1' : '#334155', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false }
+            ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 150, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { display: false }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
         }
     });
 
-    const trafficData = [];
-    const labels = [];
-    const now = new Date();
+    const trafficData = []; const labels = []; const now = new Date();
     for (let i = 0; i <= 12; i++) {
-        let tHour = (now.getHours() + i) % 24;
-        labels.push(tHour + ':00');
+        let tHour = (now.getHours() + i) % 24; labels.push(tHour + ':00');
         let base = 30;
-        if (tHour >= 7 && tHour <= 9) base += 50 - Math.abs(tHour - 8) * 20;
-        if (tHour >= 16 && tHour <= 19) base += 60 - Math.abs(tHour - 17.5) * 20;
+        if (tHour >= 7 && tHour <= 9) base += 50 - Math.abs(tHour - 8) * 20; if (tHour >= 16 && tHour <= 19) base += 60 - Math.abs(tHour - 17.5) * 20;
         trafficData.push(base + Math.random() * 10);
     }
 
     trafficChartInstance = new Chart(trafCtx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Traffic Index',
-                data: trafficData,
-                borderColor: '#e3001b',
-                backgroundColor: 'rgba(227, 0, 27, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#e3001b',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } },
-                x: { grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }
-            }
+        data: { labels: labels, datasets: [{ label: 'Traffic Index', data: trafficData, borderColor: '#e3001b', backgroundColor: 'rgba(227, 0, 27, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#fff', pointBorderColor: '#e3001b', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
         }
     });
 }
 
 function submitReport() {
-   const station = document.getElementById('report-station').value;
-   const desc = document.getElementById('report-desc').value.trim();
+   const station = document.getElementById('report-station').value; const desc = document.getElementById('report-desc').value.trim();
    if(!desc) { showToast("Please describe the issue.", "error"); return; }
    appReports.unshift({ id: Date.now().toString(), reporter: currentUser.username, station: station, desc: desc, status: 'pending' });
    localStorage.setItem('sivas_reports', JSON.stringify(appReports));
-   awardAchievement(currentUser.username, 'a2');
-   renderDashboard();
-   showToast("Report submitted successfully.", "success");
+   awardAchievement(currentUser.username, 'a2'); renderDashboard(); showToast("Report submitted successfully.", "success");
 }
 
 function resolveReport(id, status) {
@@ -1466,57 +1276,30 @@ function resolveReport(id, status) {
       if(status === 'verified') {
          let targetStation = rep.lat ? rep.nearest_station : rep.station;
          if(targetStation && !closedStations.includes(targetStation)) {
-             closedStations.push(targetStation);
-             localStorage.setItem('sivas_closed_stations', JSON.stringify(closedStations));
-             initServiceAlerts();
+             closedStations.push(targetStation); localStorage.setItem('sivas_closed_stations', JSON.stringify(closedStations)); initServiceAlerts();
          }
       }
-      localStorage.setItem('sivas_reports', JSON.stringify(appReports));
-      renderDashboard();
-      if(window.liveMap) loadLiveMap(window.activeRouteMeta);
+      localStorage.setItem('sivas_reports', JSON.stringify(appReports)); renderDashboard(); if(window.liveMap) loadLiveMap(window.activeRouteMeta);
    }
 }
 
-function openRerouteModal(id) {
-    currentRerouteId = id;
-    document.getElementById('reroute-modal').classList.remove('hidden');
-    document.getElementById('reroute-modal').classList.add('flex');
-}
-
-function closeRerouteModal() {
-    document.getElementById('reroute-modal').classList.add('hidden');
-    document.getElementById('reroute-modal').classList.remove('flex');
-    currentRerouteId = null;
-}
+function openRerouteModal(id) { currentRerouteId = id; document.getElementById('reroute-modal').classList.remove('hidden'); document.getElementById('reroute-modal').classList.add('flex'); }
+function closeRerouteModal() { document.getElementById('reroute-modal').classList.add('hidden'); document.getElementById('reroute-modal').classList.remove('flex'); currentRerouteId = null; }
 
 function confirmReroute() {
     if(!currentRerouteId) return;
-    const hours = parseFloat(document.getElementById('reroute-duration').value) || 1;
-    const rep = appReports.find(r => r.id === currentRerouteId);
+    const hours = parseFloat(document.getElementById('reroute-duration').value) || 1; const rep = appReports.find(r => r.id === currentRerouteId);
     if (rep) {
-        rep.status = 'rerouted';
-        rep.expiresAt = window.getSimulatedTime() + (hours * 3600000);
-        localStorage.setItem('sivas_reports', JSON.stringify(appReports));
-        
-        showToast(`Dynamic detour created for ${hours} hours.`, "success");
-        renderDashboard();
-        
-        if(window.liveMap) {
-            ensureLineCoords(true).then(() => {
-                loadLiveMap(window.activeRouteMeta);
-            });
-        }
+        rep.status = 'rerouted'; rep.expiresAt = window.getSimulatedTime() + (hours * 3600000); localStorage.setItem('sivas_reports', JSON.stringify(appReports));
+        showToast(`Dynamic detour created for ${hours} hours.`, "success"); renderDashboard();
+        if(window.liveMap) { ensureLineCoords(true).then(() => { loadLiveMap(window.activeRouteMeta); }); }
     }
     closeRerouteModal();
 }
 
 // --- SETTINGS LOGIC ---
-function showSettingsError(msg) {
-  const err = document.getElementById('settings-error'); err.textContent = msg; err.classList.remove('hidden'); document.getElementById('settings-success').classList.add('hidden');
-}
-function showSettingsSuccess(msg) {
-  const succ = document.getElementById('settings-success'); succ.textContent = msg; succ.classList.remove('hidden'); document.getElementById('settings-error').classList.add('hidden');
-}
+function showSettingsError(msg) { const err = document.getElementById('settings-error'); err.textContent = msg; err.classList.remove('hidden'); document.getElementById('settings-success').classList.add('hidden'); }
+function showSettingsSuccess(msg) { const succ = document.getElementById('settings-success'); succ.textContent = msg; succ.classList.remove('hidden'); document.getElementById('settings-error').classList.add('hidden'); }
 function handleProfilePicUpload(e) {
   const file = e.target.files[0]; if (!file) return;
   if (file.size > 1024 * 1024) { showSettingsError("Image size must be less than 1MB."); return; }
@@ -1533,11 +1316,8 @@ function openSettingsModal() {
   if (!currentUser) return;
   document.getElementById('settings-username-display').textContent = `Profile: ${currentUser.username}`; document.getElementById('settings-form').reset();
   const userProfile = registeredUsers[currentUser.username];
-  if (userProfile && userProfile.profilePic) {
-    document.getElementById('settings-profile-preview').src = userProfile.profilePic; document.getElementById('settings-profile-preview').classList.remove('hidden'); document.getElementById('settings-profile-icon').classList.add('hidden');
-  } else {
-    document.getElementById('settings-profile-preview').src = ''; document.getElementById('settings-profile-preview').classList.add('hidden'); document.getElementById('settings-profile-icon').classList.remove('hidden');
-  }
+  if (userProfile && userProfile.profilePic) { document.getElementById('settings-profile-preview').src = userProfile.profilePic; document.getElementById('settings-profile-preview').classList.remove('hidden'); document.getElementById('settings-profile-icon').classList.add('hidden'); } 
+  else { document.getElementById('settings-profile-preview').src = ''; document.getElementById('settings-profile-preview').classList.add('hidden'); document.getElementById('settings-profile-icon').classList.remove('hidden'); }
   document.getElementById('settings-error').classList.add('hidden'); document.getElementById('settings-success').classList.add('hidden');
   document.getElementById('settings-modal').classList.remove('hidden'); document.getElementById('settings-modal').classList.add('flex');
 }
@@ -1552,8 +1332,7 @@ function openDeleteAccountModal() { document.getElementById('delete-account-moda
 function closeDeleteAccountModal() { document.getElementById('delete-account-modal').classList.add('hidden'); document.getElementById('delete-account-modal').classList.remove('flex'); }
 function confirmDeleteAccount() {
   delete registeredUsers[currentUser.username]; localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
-  currentUser = null; localStorage.removeItem('sivas_user'); closeDeleteAccountModal(); closeSettingsModal(); updateAuthUI();
-  showToast("Account deleted successfully.", "info");
+  currentUser = null; localStorage.removeItem('sivas_user'); closeDeleteAccountModal(); closeSettingsModal(); updateAuthUI(); showToast("Account deleted successfully.", "info");
 }
 
 // --- FAVORITES LOGIC ---
@@ -1581,16 +1360,12 @@ function toggleFavorite() {
 function updateFavoriteBtnState() {
   const station = document.getElementById('p_global_stop').value; const icon = document.getElementById('fav-icon'); const btn = document.getElementById('btn-toggle-fav');
   let userFavs = (currentUser && registeredUsers[currentUser.username]?.favorites) ? registeredUsers[currentUser.username].favorites : [];
-  if (station && userFavs.includes(station)) {
-    icon.className = "material-symbols-outlined text-[26px] text-amber-500 transition-transform hover:scale-110"; icon.style.fontVariationSettings = '"FILL" 1'; btn.classList.add('border-amber-400');
-  } else {
-    icon.className = "material-symbols-outlined text-[26px] transition-transform hover:scale-110"; icon.style.fontVariationSettings = '"FILL" 0'; btn.classList.remove('border-amber-400');
-  }
+  if (station && userFavs.includes(station)) { icon.className = "material-symbols-outlined text-[26px] text-amber-500 transition-transform hover:scale-110"; icon.style.fontVariationSettings = '"FILL" 1'; btn.classList.add('border-amber-400'); } 
+  else { icon.className = "material-symbols-outlined text-[26px] transition-transform hover:scale-110"; icon.style.fontVariationSettings = '"FILL" 0'; btn.classList.remove('border-amber-400'); }
 }
 function setGlobalStopAndSearch(station) { document.getElementById('p_global_stop').value = station; updateFavoriteBtnState(); runPredictor(); }
 function populateLiveTimesStops() {
   const allStops = new Set(); Object.values(window.DATA.stopsByLine).forEach(stops => stops.forEach(s => allStops.add(s)));
-  // Sort by line then sequence for logical ordering
   const sortedStops = Array.from(allStops).sort((a, b) => {
       const ma = window.STOP_META[a] || {}, mb = window.STOP_META[b] || {};
       return (ma.line_id||"").localeCompare(mb.line_id||"") || (ma.stop_sequence||0) - (mb.stop_sequence||0);
@@ -1605,56 +1380,28 @@ function populateLiveTimesStops() {
 }
 
 async function updateClock() { 
-    const n = new Date(); 
-    document.getElementById("clockDisplay").textContent = n.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}); 
+    const n = new Date(); document.getElementById("clockDisplay").textContent = n.toLocaleTimeString("tr-TR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}); 
     if (n.getSeconds() === 0) {
         updateMapConditionsUI(); 
-        
-        // Dynamically check if a detour naturally expired over time
         const newHash = window.getActiveDetoursHash(window.getSimulatedTime());
-        if (window.currentDetourHash !== newHash) {
-            await ensureLineCoords(true);
-            if(window.liveMap) loadLiveMap(window.activeRouteMeta);
-        }
+        if (window.currentDetourHash !== newHash) { await ensureLineCoords(true); if(window.liveMap) loadLiveMap(window.activeRouteMeta); }
     } 
 }
 
-// --- ACHIEVEMENTS LOGIC ---
+// --- ACHIEVEMENTS & LEADERBOARD LOGIC ---
 function renderAchievementsPage() {
-  if (!currentUser) return;
-  const userProfile = registeredUsers[currentUser.username];
-  const unlocked = userProfile.unlockedAchievements || [];
   const container = document.getElementById('achievements-container');
-  const banner = document.getElementById('top-achiever-banner');
-  if (!container) return;
+  const banner = document.getElementById('auth-prompt-banner');
+  const leaderboardList = document.getElementById('leaderboard-list');
   
-  let topUser = null;
-  let maxCount = 0;
-  for (const [u, data] of Object.entries(registeredUsers)) {
-    const count = (data.unlockedAchievements || []).length;
-    if (count > maxCount) { maxCount = count; topUser = u; }
-  }
+  if (!container || !leaderboardList) return;
   
-  if (banner) {
-    if (topUser && maxCount > 0) {
-        banner.innerHTML = `
-            <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-3xl shadow-heavy p-8 flex items-center gap-6 text-white border-l-8 border-amber-300 transform transition-transform hover:scale-[1.02]">
-                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-[40px]">workspace_premium</span>
-                </div>
-                <div>
-                    <h2 class="text-xs font-black uppercase tracking-widest text-amber-100 mb-1">Top Contributor</h2>
-                    <div class="font-display font-black text-3xl uppercase tracking-wide leading-none">${topUser}</div>
-                    <div class="text-sm font-extrabold text-amber-200 mt-2 uppercase tracking-widest">${maxCount} Trophies Unlocked</div>
-                </div>
-            </div>
-        `;
-        banner.classList.remove('hidden');
-    } else {
-        banner.classList.add('hidden');
-    }
-  }
+  let userProfile = currentUser ? registeredUsers[currentUser.username] : null;
+  let unlocked = userProfile ? (userProfile.unlockedAchievements || []) : [];
   
+  if (currentUser) { if(banner) banner.classList.add('hidden'); } else { if(banner) banner.classList.remove('hidden'); }
+  
+  // Render Achievements Grid
   container.innerHTML = appAchievements.map(ach => {
     const isUnlocked = unlocked.includes(ach.id);
     const bgClass = isUnlocked ? 'bg-white dark:bg-gray-800 border-metroblue-500' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 opacity-60 grayscale';
@@ -1669,47 +1416,109 @@ function renderAchievementsPage() {
         </div>
         <div>
           <h3 class="font-extrabold text-base text-metroblue-900 dark:text-white uppercase tracking-wider">${ach.title}</h3>
-          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1.5 leading-tight">${ach.desc}</p>
-          <div class="mt-3 inline-block px-3 py-1 bg-gray-100 dark:bg-gray-700 text-[10px] font-black text-gray-600 dark:text-gray-300 rounded-lg tracking-widest uppercase shadow-sm">${ach.points} PTS</div>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-1.5 leading-tight">${ach.desc}</p>
+          <div class="mt-3 inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-[9px] font-black text-gray-600 dark:text-gray-300 rounded-lg tracking-widest uppercase shadow-sm">${ach.points} PTS</div>
         </div>
       </div>
     `;
   }).join('');
-}
-
-function createAchievement() {
-  const title = document.getElementById('admin-ach-title').value.trim();
-  const icon = document.getElementById('admin-ach-icon').value.trim() || 'star';
-  const points = parseInt(document.getElementById('admin-ach-points').value) || 10;
-  const desc = document.getElementById('admin-ach-desc').value.trim();
-  if (!title || !desc) { showToast("Title and Description are required.", "error"); return; }
-  const newAch = { id: 'a' + Date.now(), title, icon, points, desc };
-  appAchievements.push(newAch);
-  localStorage.setItem('sivas_achievements', JSON.stringify(appAchievements));
-  showToast("Achievement created successfully", "success");
-  renderDashboard();
-}
-
-function deleteAchievement(id) {
-  appAchievements = appAchievements.filter(a => a.id !== id);
-  localStorage.setItem('sivas_achievements', JSON.stringify(appAchievements));
-  showToast("Achievement deleted", "info");
-  renderDashboard();
-}
-
-function awardAchievement(targetUser, achId) {
-  const user = targetUser || document.getElementById('award-user-select').value;
-  const id = achId || document.getElementById('award-ach-select').value;
-  if (!registeredUsers[user]) return;
-  if (!registeredUsers[user].unlockedAchievements) registeredUsers[user].unlockedAchievements = [];
   
-  if (!registeredUsers[user].unlockedAchievements.includes(id)) {
-    registeredUsers[user].unlockedAchievements.push(id);
-    localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
-    if (!targetUser) showToast(`Achievement awarded to ${user}!`, "success");
-    if (document.getElementById('page-achievements').classList.contains('active')) renderAchievementsPage();
+  // Build and render Public Leaderboard Podium & List
+  let usersScore = [];
+  let userReportsCount = {};
+  appReports.forEach(r => { if(!userReportsCount[r.reporter]) userReportsCount[r.reporter]=0; userReportsCount[r.reporter]++; });
+  
+  for (let uname in registeredUsers) {
+      let u = registeredUsers[uname];
+      if (u.role === 'admin' && !uname.includes('Demo')) continue; 
+      
+      let score = 0;
+      (u.unlockedAchievements || []).forEach(achId => {
+          let ach = appAchievements.find(a => a.id === achId);
+          if (ach) score += ach.points;
+      });
+      
+      usersScore.push({
+          name: uname, score: score, badges: (u.unlockedAchievements || []).length,
+          rides: u.rideCount || 0, reports: userReportsCount[uname] || 0, avatar: u.profilePic || null
+      });
+  }
+  
+  usersScore.sort((a,b) => b.score - a.score);
+  
+  if (usersScore.length === 0) {
+      leaderboardList.innerHTML = `<div class="p-6 text-center text-sm font-bold text-gray-500 uppercase tracking-widest">No riders on the leaderboard yet.</div>`;
   } else {
-    if (!targetUser) showToast(`${user} already has this achievement.`, "info");
+      let podiumHtml = '';
+      if (usersScore.length >= 3) {
+         podiumHtml = `
+         <div class="flex items-end justify-center gap-2 mb-8 mt-4 border-b border-gray-100 dark:border-gray-700 pb-8 px-4">
+             <div class="flex flex-col items-center w-1/3 max-w-[120px]">
+                 <div class="relative mb-2">
+                     <img src="${usersScore[1].avatar || 'https://ui-avatars.com/api/?name='+usersScore[1].name+'&background=e2e8f0&color=475569'}" class="w-14 h-14 rounded-full border-4 border-gray-300 object-cover z-10 relative">
+                     <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-xs font-black text-white border-2 border-white z-20">2</div>
+                 </div>
+                 <div class="text-xs font-extrabold truncate w-full text-center dark:text-white">${usersScore[1].name}</div>
+                 <div class="text-amber-500 font-black text-sm">${usersScore[1].score} <span class="text-[9px]">PTS</span></div>
+                 <div class="h-20 w-full bg-gradient-to-t from-gray-200 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-t-lg mt-2 border-t-4 border-gray-300 shadow-inner"></div>
+             </div>
+             <div class="flex flex-col items-center w-1/3 max-w-[140px] z-10">
+                 <div class="relative mb-2">
+                     <span class="material-symbols-outlined text-yellow-400 text-3xl absolute -top-8 left-1/2 -translate-x-1/2 drop-shadow-md">crown</span>
+                     <img src="${usersScore[0].avatar || 'https://ui-avatars.com/api/?name='+usersScore[0].name+'&background=fef08a&color=a16207'}" class="w-20 h-20 rounded-full border-4 border-yellow-400 object-cover z-10 relative shadow-lg">
+                     <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-sm font-black text-white border-2 border-white z-20 shadow-sm">1</div>
+                 </div>
+                 <div class="text-sm font-black truncate w-full text-center dark:text-white">${usersScore[0].name}</div>
+                 <div class="text-amber-500 font-black text-lg">${usersScore[0].score} <span class="text-[10px]">PTS</span></div>
+                 <div class="h-28 w-full bg-gradient-to-t from-yellow-100 to-yellow-50 dark:from-yellow-900/40 dark:to-yellow-800/20 rounded-t-xl mt-2 border-t-4 border-yellow-400 shadow-inner"></div>
+             </div>
+             <div class="flex flex-col items-center w-1/3 max-w-[120px]">
+                 <div class="relative mb-2">
+                     <img src="${usersScore[2].avatar || 'https://ui-avatars.com/api/?name='+usersScore[2].name+'&background=fed7aa&color=c2410c'}" class="w-12 h-12 rounded-full border-4 border-amber-600 object-cover z-10 relative">
+                     <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-amber-600 rounded-full flex items-center justify-center text-xs font-black text-white border-2 border-white z-20">3</div>
+                 </div>
+                 <div class="text-[11px] font-extrabold truncate w-full text-center dark:text-white">${usersScore[2].name}</div>
+                 <div class="text-amber-500 font-black text-xs">${usersScore[2].score} <span class="text-[8px]">PTS</span></div>
+                 <div class="h-14 w-full bg-gradient-to-t from-amber-200 to-amber-100 dark:from-orange-900/40 dark:to-orange-800/20 rounded-t-lg mt-2 border-t-4 border-amber-600 shadow-inner"></div>
+             </div>
+         </div>
+         `;
+      }
+      
+      let listHtml = usersScore.map((u, index) => {
+          let rankMedal = '';
+          if (index === 0) rankMedal = '<div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-white font-black shadow-md border-2 border-white absolute -left-3">1</div>';
+          else if (index === 1) rankMedal = '<div class="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white font-black shadow-md border-2 border-white absolute -left-3">2</div>';
+          else if (index === 2) rankMedal = '<div class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white font-black shadow-md border-2 border-white absolute -left-3">3</div>';
+          else rankMedal = `<div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 text-[10px] flex items-center justify-center font-black absolute -left-2">${index + 1}</div>`;
+          
+          let isMe = currentUser && currentUser.username === u.name;
+          let rowClass = isMe ? 'bg-amber-50 dark:bg-amber-900/10 border-l-4 border-amber-500' : 'border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750';
+          let avatarHtml = u.avatar ? `<img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover shadow-sm">` : `<div class="w-10 h-10 rounded-full bg-metroblue-100 dark:bg-gray-700 text-metroblue-600 dark:text-gray-300 flex items-center justify-center font-black">${u.name.substring(0,1).toUpperCase()}</div>`;
+            
+          return `
+          <div class="relative flex items-center justify-between p-4 pl-8 transition-colors ${rowClass}">
+              ${rankMedal}
+              <div class="flex items-center gap-3">
+                  ${avatarHtml}
+                  <div>
+                      <div class="font-extrabold text-sm text-metroblue-900 dark:text-white">${u.name} ${isMe ? '<span class="text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest ml-1">You</span>' : ''}</div>
+                      <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5 flex items-center gap-2">
+                          <span class="flex items-center gap-0.5" title="Trophies"><span class="material-symbols-outlined text-[12px] text-amber-500">workspace_premium</span> ${u.badges}</span>
+                          <span class="flex items-center gap-0.5" title="Rides Logged"><span class="material-symbols-outlined text-[12px] text-metroblue-500">directions_bus</span> ${u.rides}</span>
+                          <span class="flex items-center gap-0.5" title="Incidents Reported"><span class="material-symbols-outlined text-[12px] text-metrored-500">campaign</span> ${u.reports}</span>
+                      </div>
+                  </div>
+              </div>
+              <div class="text-right">
+                  <div class="font-black text-lg text-amber-500 leading-none">${u.score}</div>
+                  <div class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">PTS</div>
+              </div>
+          </div>
+          `;
+      }).join('');
+      
+      leaderboardList.innerHTML = podiumHtml + '<div class="mt-2">' + listHtml + '</div>';
   }
 }
 
@@ -1741,15 +1550,12 @@ function switchTab(name) {
 // --- TEXT-TO-SPEECH LOGIC ---
 window.playArrivalsSpeech = function(encodedText) {
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Stop any currently playing audio
+        window.speechSynthesis.cancel(); 
         const text = decodeURIComponent(encodedText);
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-US'; 
-        msg.rate = 0.95; // Slightly slower for clarity
+        msg.lang = 'en-US'; msg.rate = 0.90; 
         window.speechSynthesis.speak(msg);
-    } else {
-        showToast("Text-to-speech is not supported in your browser.", "error");
-    }
+    } else { showToast("Text-to-speech is not supported in your browser.", "error"); }
 };
 
 // --- MAP & ROUTE PLANNER ENGINE ---
@@ -1800,33 +1606,24 @@ async function fetchOSRMRoute(lineId, stopsCount) {
         let waypoints = JSON.parse(JSON.stringify(window.LINE_WAYPOINTS[lineId] || [[37.016, 39.750], [37.026, 39.760]]));
         let isDetoured = false;
         
-        // Dynamically apply active detour constraints based on SIMULATED time
         const simTime = window.getSimulatedTime();
         appReports.forEach(r => {
             if (r.status === 'rerouted' && r.lat && r.lng && (!r.expiresAt || r.expiresAt > simTime)) {
-                let minDist = Infinity;
-                let insertIdx = 1;
+                let minDist = Infinity; let insertIdx = 1;
                 for(let i=0; i<waypoints.length-1; i++) {
-                    const p1 = waypoints[i];
-                    const p2 = waypoints[i+1];
+                    const p1 = waypoints[i]; const p2 = waypoints[i+1];
                     const mid = [(p1[0]+p2[0])/2, (p1[1]+p2[1])/2];
                     const dist = Math.sqrt(Math.pow(mid[0]-r.lat, 2) + Math.pow(mid[1]-r.lng, 2));
                     if (dist < minDist) { minDist = dist; insertIdx = i + 1; }
                 }
-                // Increased detection radius & displacement so the detour is visibly obvious
-                if (minDist < 0.02) {
-                    waypoints.splice(insertIdx, 0, [r.lat + 0.015, r.lng + 0.015]);
-                    isDetoured = true;
-                }
+                if (minDist < 0.02) { waypoints.splice(insertIdx, 0, [r.lat + 0.015, r.lng + 0.015]); isDetoured = true; }
             }
         });
 
-        const coordString = waypoints.map(p => `${p[1]},${p[0]}`).join(';');  // OSRM expects lon,lat
-        const controller = new AbortController();
-        const osrmTimeout = setTimeout(() => controller.abort(), 5000);
+        const coordString = waypoints.map(p => `${p[1]},${p[0]}`).join(';');
+        const controller = new AbortController(); const osrmTimeout = setTimeout(() => controller.abort(), 5000);
         const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`, { signal: controller.signal });
-        clearTimeout(osrmTimeout);
-        const data = await res.json();
+        clearTimeout(osrmTimeout); const data = await res.json();
         if (data.routes && data.routes.length > 0) {
             const geojsonCoords = data.routes[0].geometry.coordinates; const latLngs = geojsonCoords.map(c => [c[1], c[0]]);
             const segments = []; const stops = []; const pps = (latLngs.length - 1) / (stopsCount - 1);
@@ -1843,13 +1640,7 @@ async function fetchOSRMRoute(lineId, stopsCount) {
 
 async function ensureLineCoords(force = false) {
     const newHash = window.getActiveDetoursHash(window.getSimulatedTime());
-    
-    // Purge cached lines if dynamic detours state changed based on the simulated time
-    if (force || window.currentDetourHash !== newHash) {
-        window.cachedLineCoords = {};
-        window.currentDetourHash = newHash;
-    }
-    
+    if (force || window.currentDetourHash !== newHash) { window.cachedLineCoords = {}; window.currentDetourHash = newHash; }
     if (Object.keys(window.cachedLineCoords).length > 0 || window.isFetchingCoords) return;
     
     window.isFetchingCoords = true;
@@ -1871,12 +1662,8 @@ async function updateTimeOffset(val) {
         display.className = "text-[10px] font-bold uppercase tracking-wider text-white bg-metroblue-600 px-3 py-1.5 rounded-lg shadow-sm"; 
     }
     
-    // When time changes, check if any detours have naturally expired or come back online in this simulation window
     const newHash = window.getActiveDetoursHash(window.getSimulatedTime());
-    if (window.currentDetourHash !== newHash) {
-        await ensureLineCoords(true);
-        if(window.liveMap) loadLiveMap(window.activeRouteMeta);
-    }
+    if (window.currentDetourHash !== newHash) { await ensureLineCoords(true); if(window.liveMap) loadLiveMap(window.activeRouteMeta); }
 }
 
 const busIconHtml = `<div class="w-8 h-8 bg-metroblue-900 text-white rounded-lg shadow-md border-2 border-white dark:border-gray-800 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">directions_bus</span></div>`;
@@ -1898,70 +1685,40 @@ function populateMapStops() {
     });
     document.getElementById('m_from').innerHTML = html; document.getElementById('m_to').innerHTML = html;
     
-    // Also populate the planner line dropdown
     let linesHtml = '<option value="">Choose a line...</option>';
-    for (let lid in window.DATA.lineNames) {
-        linesHtml += `<option value="${lid}">${lid} - ${window.DATA.lineNames[lid]}</option>`;
-    }
+    for (let lid in window.DATA.lineNames) { linesHtml += `<option value="${lid}">${lid} - ${window.DATA.lineNames[lid]}</option>`; }
     const plannerDropdown = document.getElementById('tp_line');
     if (plannerDropdown) plannerDropdown.innerHTML = linesHtml;
 }
 
 function initMapIfNeeded() {
     if (!window.liveMap) {
-        // SAFE DYNAMIC MAP CENTER: Calculate average from loaded waypoints, fallback to hardcoded if empty.
-        let centerLat = 39.697, centerLng = 37.050; 
-        let totalLat = 0, totalLng = 0, pointCount = 0;
-        
-        for (const lineId in window.LINE_WAYPOINTS) {
-            window.LINE_WAYPOINTS[lineId].forEach(coord => {
-                totalLat += coord[0]; totalLng += coord[1]; pointCount++;
-            });
-        }
-        if (pointCount > 0) {
-            centerLat = totalLat / pointCount;
-            centerLng = totalLng / pointCount;
-        }
+        let centerLat = 39.697, centerLng = 37.050; let totalLat = 0, totalLng = 0, pointCount = 0;
+        for (const lineId in window.LINE_WAYPOINTS) { window.LINE_WAYPOINTS[lineId].forEach(coord => { totalLat += coord[0]; totalLng += coord[1]; pointCount++; }); }
+        if (pointCount > 0) { centerLat = totalLat / pointCount; centerLng = totalLng / pointCount; }
 
         window.liveMap = L.map('live-map').setView([centerLat, centerLng], 13);
         
-        updateMapConditionsUI(); updateMapTheme();
-        routeLayerGroup.addTo(window.liveMap); populateMapStops();
+        updateMapConditionsUI(); updateMapTheme(); routeLayerGroup.addTo(window.liveMap); populateMapStops();
         
         window.liveMap.on('click', function(e) {
             const lat = e.latlng.lat; const lng = e.latlng.lng;
-            
             let reportBtn = '';
             if (currentUser) {
-                reportBtn = `
-                    <button onclick="window.openMapReportModal(${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 uppercase tracking-wider text-metrored-600 border-t border-gray-100 dark:border-gray-700 mt-1 transition-colors">
-                        <span class="material-symbols-outlined text-[16px]">campaign</span> Report Incident
-                    </button>
-                `;
+                reportBtn = `<button onclick="window.openMapReportModal(${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 uppercase tracking-wider text-metrored-600 border-t border-gray-100 dark:border-gray-700 mt-1 transition-colors"><span class="material-symbols-outlined text-[16px]">campaign</span> Report Incident</button>`;
             }
-
             const popupContent = `
                 <div class="flex flex-col gap-0 min-w-[160px]">
                     <div class="font-extrabold text-xs text-metroblue-900 dark:text-white uppercase mb-2 border-b border-gray-200 dark:border-gray-700 pb-2 px-1">Location Actions</div>
-                    <button onclick="window.setPinFromMap('origin', ${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 uppercase tracking-wider text-gray-700 dark:text-gray-300 transition-colors">
-                        <span class="material-symbols-outlined text-[16px]">my_location</span> Start Route
-                    </button>
-                    <button onclick="window.setPinFromMap('dest', ${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 uppercase tracking-wider text-gray-700 dark:text-gray-300 transition-colors">
-                        <span class="material-symbols-outlined text-[16px]">flag</span> End Route
-                    </button>
+                    <button onclick="window.setPinFromMap('origin', ${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 uppercase tracking-wider text-gray-700 dark:text-gray-300 transition-colors"><span class="material-symbols-outlined text-[16px]">my_location</span> Start Route</button>
+                    <button onclick="window.setPinFromMap('dest', ${lat}, ${lng})" class="px-4 py-2.5 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 uppercase tracking-wider text-gray-700 dark:text-gray-300 transition-colors"><span class="material-symbols-outlined text-[16px]">flag</span> End Route</button>
                     ${reportBtn}
                 </div>`;
             L.popup().setLatLng(e.latlng).setContent(popupContent).openOn(window.liveMap);
         });
-        // Wait for CSV network data to be ready before fetching routes
         (async () => {
-            if (Object.keys(window.DATA.stopsByLine).length === 0) {
-                await loadNetworkFromCSV();
-                populateLiveTimesStops();
-                populateMapStops();
-            }
-            await ensureLineCoords();
-            loadLiveMap(null);
+            if (Object.keys(window.DATA.stopsByLine).length === 0) { await loadNetworkFromCSV(); populateLiveTimesStops(); populateMapStops(); }
+            await ensureLineCoords(); loadLiveMap(null);
         })();
     }
     setTimeout(() => { window.liveMap.invalidateSize(); }, 100);
@@ -1969,44 +1726,27 @@ function initMapIfNeeded() {
 
 function generateFallbackCoordinates(lineId, stopCount, providedWaypoints, isDetoured) {
     let coords = providedWaypoints || window.LINE_WAYPOINTS[lineId];
-
     if (!coords || coords.length < 2) {
-        const center = [39.697, 37.050];
-        const mods = { L01:[0.003,0.004], L02:[-0.003,0.005], L03:[-0.004,-0.003], L04:[0.004,-0.004], L05:[0.005,0.002] };
+        const center = [39.697, 37.050]; const mods = { L01:[0.003,0.004], L02:[-0.003,0.005], L03:[-0.004,-0.003], L04:[0.004,-0.004], L05:[0.005,0.002] };
         const mod = mods[lineId] || [0.002, 0.002];
         coords = [center]; let curr = [...center];
         for (let i = 1; i < stopCount; i++) { curr = [curr[0]+mod[0], curr[1]+mod[1]]; coords.push([...curr]); }
         isDetoured = false;
     }
+    function interp(p1, p2, steps) { const pts = []; for (let s = 0; s <= steps; s++) pts.push([p1[0] + (p2[0]-p1[0])*s/steps, p1[1] + (p2[1]-p1[1])*s/steps]); return pts; }
 
-    // Interpolate sub-points between stops for smooth animation without OSRM
-    function interp(p1, p2, steps) {
-        const pts = [];
-        for (let s = 0; s <= steps; s++)
-            pts.push([p1[0] + (p2[0]-p1[0])*s/steps, p1[1] + (p2[1]-p1[1])*s/steps]);
-        return pts;
-    }
-
-    const STEPS = 10;
-    const path = [], segments = [], stops = [];
-    const useCount = Math.min(stopCount, coords.length);
-    const pps = (coords.length - 1) / Math.max(useCount - 1, 1);
-
+    const STEPS = 10; const path = [], segments = [], stops = []; const useCount = Math.min(stopCount, coords.length); const pps = (coords.length - 1) / Math.max(useCount - 1, 1);
     for (let i = 0; i < useCount - 1; i++) {
-        const si = Math.round(i * pps);
-        const ei = Math.min(Math.round((i+1) * pps), coords.length - 1);
-        const seg = [];
+        const si = Math.round(i * pps); const ei = Math.min(Math.round((i+1) * pps), coords.length - 1); const seg = [];
         for (let k = si; k < ei; k++) {
             const pts = interp(coords[k], coords[Math.min(k+1, coords.length-1)], STEPS);
             k === si ? pts.forEach(p => seg.push(p)) : pts.slice(1).forEach(p => seg.push(p));
         }
         if (seg.length < 2) seg.push(coords[ei]);
-        segments.push(seg);
-        stops.push(coords[si]);
+        segments.push(seg); stops.push(coords[si]);
         i === 0 ? seg.forEach(p => path.push(p)) : seg.slice(1).forEach(p => path.push(p));
     }
     stops.push(coords[Math.round((useCount-1)*pps)]);
-    console.log(`CSV route for ${lineId}: ${path.length} pts, ${segments.length} segs`);
     return { path, stops, segments, isDetoured: !!isDetoured };
 }
 
@@ -2019,10 +1759,11 @@ function startGlobalAnimation() {
 function updateBusPosition(bus, realMs) {
     const speed = 15; const simMs = realMs * speed + (window.globalTimeOffsetMinutes * 60000 * speed);
     const cond = getSystemConditions();
-    const traffic = {low: 1.2, moderate: 1.0, high: 0.6}[cond.traffic] ?? 1.0;
-    const weather = {clear: 1.0, cloudy: 0.95, rain: 0.8, snow: 0.5}[cond.weather] ?? 1.0;
-    const base = { 'L01': 1.1, 'L02': 0.9, 'L03': 0.7, 'L04': 1.0, 'L05': 1.3 };
-    const mult = (base[bus.lineId.substring(0,3)] || 1.0) * traffic * weather;
+    const trafficMult = {low: 1.2, moderate: 1.0, high: 0.6}[cond.traffic] ?? 1.0;
+    
+    // Dynamic Speed Multiplier using CSV Data
+    const mult = getLineSpeedMult(bus.lineId, cond.weather) * trafficMult;
+    
     const segT = 120000 / Math.max(0.1, mult); const dwellT = 30000; const totalSegT = segT + dwellT;
     const totalT = totalSegT * bus.segments.length;
     if (totalT <= 0) return;
@@ -2042,11 +1783,11 @@ function updateItineraryPanel(realMs) {
     const meta = window.activeRouteMeta; const panel = document.getElementById('map_itinerary');
     const speed = 15; const simMs = realMs * speed + (window.globalTimeOffsetMinutes * 60000 * speed);
     const cond = getSystemConditions();
-    const traffic = {low: 1.2, moderate: 1.0, high: 0.6}[cond.traffic] ?? 1.0;
-    const weather = {clear: 1.0, rain: 0.8, snow: 0.5}[cond.weather] ?? 1.0;
-    const base = { 'L01': 1.1, 'L02': 0.9, 'L03': 0.7, 'L04': 1.0, 'L05': 1.3 };
+    const trafficMult = {low: 1.2, moderate: 1.0, high: 0.6}[cond.traffic] ?? 1.0;
+    
     const metaLeg = meta.type === 'direct' ? meta : meta.leg1;
-    const mult = (base[metaLeg.lineId] || 1.0) * traffic * weather;
+    const mult = getLineSpeedMult(metaLeg.lineId, cond.weather) * trafficMult;
+    
     const segT = 120000 / Math.max(0.1, mult) + 30000;
     const totalT = segT * (window.DATA.stopsByLine[metaLeg.lineId].length - 1);
     const hash = metaLeg.lineId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
@@ -2088,19 +1829,12 @@ function updateItineraryPanel(realMs) {
 window.simulateGPSRide = function() {
     if (!currentUser || !window.activeRouteMeta) return;
     
-    const route = window.activeRouteMeta;
-    const cond = getSystemConditions();
-    const now = new Date();
-    const hour = now.getHours();
-    
+    const route = window.activeRouteMeta; const cond = getSystemConditions(); const now = new Date(); const hour = now.getHours();
     let unlocks = ['a1'];
     
     if (route.type === 'direct') {
-        if (route.lineId === 'L01') unlocks.push('a4');
-        if (route.lineId === 'L02') unlocks.push('a5');
-        if (route.lineId === 'L03') unlocks.push('a6');
-        if (route.lineId === 'L04') unlocks.push('a7');
-        if (route.lineId === 'L05') unlocks.push('a8');
+        if (route.lineId === 'L01') unlocks.push('a4'); if (route.lineId === 'L02') unlocks.push('a5'); if (route.lineId === 'L03') unlocks.push('a6');
+        if (route.lineId === 'L04') unlocks.push('a7'); if (route.lineId === 'L05') unlocks.push('a8');
         
         if (route.toStop.includes('University') || route.toStop.includes('Kampus')) unlocks.push('a10');
         if (route.toStop.includes('Hospital') || route.toStop.includes('Hastane')) unlocks.push('a11');
@@ -2112,46 +1846,26 @@ window.simulateGPSRide = function() {
         if (route.leg2.toStop.includes('Carsi') || route.leg2.toStop.includes('Merkez')) unlocks.push('a12');
     }
     
-    if (hour < 7) unlocks.push('a14');
-    if (hour >= 22) unlocks.push('a15');
-    if (cond.weather === 'rain' || cond.weather === 'snow') unlocks.push('a16');
-    if (now.getDay() === 0 || now.getDay() === 6) unlocks.push('a17');
-    if (cond.traffic === 'low') unlocks.push('a18');
-    if (cond.traffic === 'congested' || cond.traffic === 'high') unlocks.push('a19');
+    if (hour < 7) unlocks.push('a14'); if (hour >= 22) unlocks.push('a15'); if (cond.weather === 'rain' || cond.weather === 'snow') unlocks.push('a16');
+    if (now.getDay() === 0 || now.getDay() === 6) unlocks.push('a17'); if (cond.traffic === 'low') unlocks.push('a18'); if (cond.traffic === 'congested' || cond.traffic === 'high') unlocks.push('a19');
     
     if (!registeredUsers[currentUser.username].rideCount) registeredUsers[currentUser.username].rideCount = 0;
     registeredUsers[currentUser.username].rideCount += 1;
-    
-    if (registeredUsers[currentUser.username].rideCount >= 10) unlocks.push('a20');
-    if (registeredUsers[currentUser.username].rideCount >= 100) unlocks.push('a21');
+    if (registeredUsers[currentUser.username].rideCount >= 10) unlocks.push('a20'); if (registeredUsers[currentUser.username].rideCount >= 100) unlocks.push('a21');
 
     if (!registeredUsers[currentUser.username].linesRidden) registeredUsers[currentUser.username].linesRidden = [];
     let lines = route.type === 'direct' ? [route.lineId] : [route.leg1.lineId, route.leg2.lineId];
-    lines.forEach(l => {
-        if (!registeredUsers[currentUser.username].linesRidden.includes(l)) {
-            registeredUsers[currentUser.username].linesRidden.push(l);
-        }
-    });
+    lines.forEach(l => { if (!registeredUsers[currentUser.username].linesRidden.includes(l)) registeredUsers[currentUser.username].linesRidden.push(l); });
     if (registeredUsers[currentUser.username].linesRidden.length >= 5) unlocks.push('a9');
 
     if (!registeredUsers[currentUser.username].unlockedAchievements) registeredUsers[currentUser.username].unlockedAchievements = [];
-    
     let newlyUnlocked = 0;
     unlocks.forEach(achId => {
-        if (!registeredUsers[currentUser.username].unlockedAchievements.includes(achId)) {
-            registeredUsers[currentUser.username].unlockedAchievements.push(achId);
-            newlyUnlocked++;
-        }
+        if (!registeredUsers[currentUser.username].unlockedAchievements.includes(achId)) { registeredUsers[currentUser.username].unlockedAchievements.push(achId); newlyUnlocked++; }
     });
     
     localStorage.setItem('sivas_users', JSON.stringify(registeredUsers));
-    
-    if (newlyUnlocked > 0) {
-        showToast(`GPS Ride Tracked! You unlocked ${newlyUnlocked} NEW trophies!`, "success");
-    } else {
-        showToast(`GPS Ride successfully tracked and logged.`, "success");
-    }
-    
+    if (newlyUnlocked > 0) showToast(`GPS Ride Tracked! You unlocked ${newlyUnlocked} NEW trophies!`, "success"); else showToast(`GPS Ride successfully tracked and logged.`, "success");
     if (document.getElementById('page-achievements').classList.contains('active')) renderAchievementsPage();
 }
 
@@ -2169,14 +1883,11 @@ function findBestRoute(from, to) {
             for (const [id2, stops2] of Object.entries(window.DATA.stopsByLine)) {
                 if (id1 === id2) continue;
                 const ts = stops2.indexOf(x); const te = stops2.lastIndexOf(to);
-                if (ts !== -1 && te !== -1 && ts < te && (i-s+te-ts+4) < minTS) {
-                    minTS = i-s+te-ts+4; bestT = { type:'transfer', leg1:{lineId:id1, originIdx:s, destIdx:i, fromStop:from, toStop:x}, leg2:{lineId:id2, originIdx:ts, destIdx:te, fromStop:x, toStop:to}, transferStop:x, totalStops:i-s+te-ts };
-                }
+                if (ts !== -1 && te !== -1 && ts < te && (i-s+te-ts+4) < minTS) { minTS = i-s+te-ts+4; bestT = { type:'transfer', leg1:{lineId:id1, originIdx:s, destIdx:i, fromStop:from, toStop:x}, leg2:{lineId:id2, originIdx:ts, destIdx:te, fromStop:x, toStop:to}, transferStop:x, totalStops:i-s+te-ts }; }
             }
         }
     }
-    if (bestD && bestT) return bestD.totalStops <= minTS ? bestD : bestT;
-    return bestD || bestT;
+    if (bestD && bestT) return bestD.totalStops <= minTS ? bestD : bestT; return bestD || bestT;
 }
 
 function manualDropdownChange() {
@@ -2191,13 +1902,10 @@ function manualDropdownChange() {
 function optimizeRouteFromPins() {
     if (!window.userOriginLatLng && !window.userDestLatLng) return;
     const all = [];
-    for (const id in window.DATA.stopsByLine) {
-        window.DATA.stopsByLine[id].forEach((s, i) => all.push({ name:s, coord:window.cachedLineCoords[id].stops[i], lineId:id, idx:i }));
-    }
+    for (const id in window.DATA.stopsByLine) { window.DATA.stopsByLine[id].forEach((s, i) => all.push({ name:s, coord:window.cachedLineCoords[id].stops[i], lineId:id, idx:i })); }
     let bestM = null; let bestOS = null; let bestDS = null;
     if (window.userOriginLatLng && window.userDestLatLng) {
-        let minS = Infinity;
-        const uniq = [...new Set(all.map(s => s.name))];
+        let minS = Infinity; const uniq = [...new Set(all.map(s => s.name))];
         for (const oN of uniq) {
             for (const dN of uniq) {
                 if (oN === dN) continue;
@@ -2207,10 +1915,7 @@ function optimizeRouteFromPins() {
                 let minWD = Infinity; let pD = null;
                 all.filter(s => s.name === dN).forEach(s => { const d = window.liveMap.distance(window.userDestLatLng, s.coord); if (d < minWD) { minWD = d; pD = s; } });
                 
-                const walkScore = (minWO + minWD) * 10;
-                const transitScore = r.type === 'direct' ? (r.totalStops * 10) : (r.totalStops * 10 + 50);
-                const score = walkScore + transitScore;
-                
+                const walkScore = (minWO + minWD) * 10; const transitScore = r.type === 'direct' ? (r.totalStops * 10) : (r.totalStops * 10 + 50); const score = walkScore + transitScore;
                 if (score < minS) { minS = score; bestM = r; bestOS = pO; bestDS = pD; }
             }
         }
@@ -2232,21 +1937,13 @@ function loadLiveMap(meta) {
     routeLayerGroup.clearLayers(); activeBuses = [];
     if (globalAnimationId) cancelAnimationFrame(globalAnimationId);
     
-    // Draw Routes
     let lines = !meta ? Object.keys(window.DATA.lineNames).slice(0,3) : (meta.type==='direct' ? [meta.lineId] : [meta.leg1.lineId, meta.leg2.lineId]);
     let coords = [];
     lines.forEach(id => {
-        const data = window.cachedLineCoords[id]; 
-        if(!data) return;
+        const data = window.cachedLineCoords[id]; if(!data) return;
         coords = coords.concat(data.path);
         
-        // Highlight detoured routes with an Amber dashed line
-        L.polyline(data.path, { 
-            color: data.isDetoured ? '#f59e0b' : '#003882', 
-            weight: 6, 
-            opacity: 0.8,
-            dashArray: data.isDetoured ? '10, 10' : null 
-        }).addTo(routeLayerGroup);
+        L.polyline(data.path, { color: data.isDetoured ? '#f59e0b' : '#003882', weight: 6, opacity: 0.8, dashArray: data.isDetoured ? '10, 10' : null }).addTo(routeLayerGroup);
         
         data.stops.forEach((c, i) => {
             const icon = L.divIcon({ html: `<div class="w-3 h-3 bg-white border-2 border-metroblue-500 rounded-full shadow-sm"></div>`, className: '', iconSize: [12,12] });
@@ -2258,7 +1955,6 @@ function loadLiveMap(meta) {
         }
     });
 
-    // Draw User Map Incident Reports with Dynamic Detour logic reflecting simulated time
     const simTime = window.getSimulatedTime();
     appReports.forEach(r => {
         if (r.lat && r.lng) {
@@ -2266,13 +1962,11 @@ function loadLiveMap(meta) {
                 L.circle([r.lat, r.lng], {color: '#e3001b', fillColor: '#e3001b', fillOpacity: 0.3, radius: 500}).addTo(routeLayerGroup);
                 const iconHtml = `<div class="w-8 h-8 bg-black text-amber-500 rounded-full flex items-center justify-center border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse z-50"><span class="material-symbols-outlined text-[16px]">alt_route</span></div>`;
                 const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [32,32], iconAnchor: [16,16] });
-                L.marker([r.lat, r.lng], { icon }).addTo(routeLayerGroup)
-                 .bindPopup(`<div class="p-1"><b class="text-[10px] uppercase font-black tracking-widest text-amber-500">ACTIVE DETOUR</b><p class="text-xs font-medium mt-1.5 text-gray-800 dark:text-gray-200">${r.desc}</p></div>`);
+                L.marker([r.lat, r.lng], { icon }).addTo(routeLayerGroup).bindPopup(`<div class="p-1"><b class="text-[10px] uppercase font-black tracking-widest text-amber-500">ACTIVE DETOUR</b><p class="text-xs font-medium mt-1.5 text-gray-800 dark:text-gray-200">${r.desc}</p></div>`);
             } else if (r.status === 'pending') {
                 const iconHtml = `<div class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md z-50"><span class="material-symbols-outlined text-[14px]">warning</span></div>`;
                 const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [28,28], iconAnchor: [14,14] });
-                L.marker([r.lat, r.lng], { icon }).addTo(routeLayerGroup)
-                 .bindPopup(`<div class="p-1"><b class="text-[10px] uppercase font-black tracking-widest text-amber-600">PENDING REPORT</b><p class="text-xs font-medium mt-1.5 text-gray-800 dark:text-gray-200">${r.desc}</p></div>`);
+                L.marker([r.lat, r.lng], { icon }).addTo(routeLayerGroup).bindPopup(`<div class="p-1"><b class="text-[10px] uppercase font-black tracking-widest text-amber-600">PENDING REPORT</b><p class="text-xs font-medium mt-1.5 text-gray-800 dark:text-gray-200">${r.desc}</p></div>`);
             }
         }
     });
@@ -2307,40 +2001,37 @@ async function runPredictor() {
           
           const meta = window.STOP_META[stopName] || {};
           const body = { 
-              line_id: lineId, 
-              stop_sequence: meta.stop_sequence || 1, 
-              stop_type: meta.stop_type || "regular",
-              time_bucket: timeBucketKey(now.getHours()),
-              hour_of_day: now.getHours(), 
-              day_of_week: now.getDay(),
-              is_weekend: (now.getDay() === 0 || now.getDay() === 6) ? 1 : 0,
-              cumulative_delay_min: 0.0,
-              speed_factor: 1.0,
-              minutes_to_next_bus: baseArrival,
-              weather_condition: cond.weather, 
-              traffic_level: cond.traffic,
-              dwell_time_min: 1.0
+              line_id: lineId, stop_sequence: meta.stop_sequence || 1, stop_type: meta.stop_type || "regular", time_bucket: timeBucketKey(now.getHours()),
+              hour_of_day: now.getHours(), day_of_week: now.getDay(), is_weekend: (now.getDay() === 0 || now.getDay() === 6) ? 1 : 0, cumulative_delay_min: 0.0, speed_factor: 1.0,
+              minutes_to_next_bus: baseArrival, weather_condition: cond.weather, traffic_level: cond.traffic, dwell_time_min: 1.0
           };
 
-          const [arrRes, crowdRes] = await Promise.all([
-              queryDataset(`/predict-arrival`, body),
-              queryDataset(`/predict-crowd`, body)
-          ]);
+          const [arrRes, crowdRes] = await Promise.all([queryDataset(`/predict-arrival`, body), queryDataset(`/predict-crowd`, body)]);
           
           arrivals.push({ 
-              lineId, 
-              totalWait: Math.round(baseArrival + arrRes.predicted_delay_min), 
-              passengers: crowdRes.predicted_passengers, 
-              is_delayed: arrRes.is_delayed,
-              raw_data: arrRes
+              lineId, totalWait: Math.round(baseArrival + arrRes.predicted_delay_min), passengers: crowdRes.predicted_passengers, 
+              is_delayed: arrRes.is_delayed, raw_data: arrRes
           });
       }
       arrivals.sort((a, b) => a.totalWait - b.totalWait);
       
-      let speechText = `At station ${stopName}, the incoming buses are: `;
-      arrivals.forEach(a => { 
-          speechText += `Line ${a.lineId.substring(0,3)}, arriving in ${a.totalWait} minutes. `; 
-      });
+      // NATURAL TEXT-TO-SPEECH GENERATION (Fully updated with crowd & delay statuses)
+      let cleanStopName = stopName.split('-')[0].trim();
+      let speechText = `Live update for station ${cleanStopName}. `;
+      
+      if (arrivals.length === 0) {
+          speechText += "There are no incoming buses at this time.";
+      } else {
+          arrivals.forEach(a => {
+              let spokenLine = a.lineId.replace(/^L0?/, ''); 
+              let destinationRaw = window.DATA.stopsByLine[a.lineId][window.DATA.stopsByLine[a.lineId].length - 1];
+              let destCleaned = destinationRaw.split('-')[0].trim();
+              let clLabel = crowdLabel(a.passengers).label;
+              let delayText = a.is_delayed ? 'delayed' : 'on time';
+              
+              speechText += `Line ${spokenLine}, direction ${destCleaned}, arriving in ${a.totalWait} minutes, ${delayText}, ${clLabel}. `;
+          });
+      }
 
       let html = `
       <div class="flex justify-between items-center mb-6 border-b-2 border-gray-100 dark:border-gray-800 pb-4">
@@ -2373,6 +2064,7 @@ async function runPredictor() {
                       <div class="flex-1 min-w-0">
                           <div class="font-extrabold text-lg text-metroblue-900 dark:text-white uppercase truncate mb-1">DIR: ${window.DATA.stopsByLine[a.lineId][window.DATA.stopsByLine[a.lineId].length - 1]}</div>
                           <div class="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">${window.DATA.lineNames[a.lineId]}</div>
+                          <div class="mt-2 inline-block px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 ${cl.color} text-[10px] font-black uppercase tracking-widest shadow-sm">${cl.label} (${a.passengers} pax)</div>
                       </div>
                   </div>
                   <div class="text-right">
@@ -2391,7 +2083,10 @@ async function runPredictor() {
           </div>`;
       });
       resCont.innerHTML = html + "</div>";
-  } catch(e) { errBox.textContent = "Connection failed."; errBox.classList.remove("hidden"); }
+  } catch(e) { 
+      errBox.textContent = `Failed to connect to network for ${stopName}. Please check your connection and try again.`; 
+      errBox.classList.remove("hidden"); 
+  }
 }
 
 async function planTrip() {
@@ -2405,9 +2100,21 @@ async function planTrip() {
   let html = `<div class="relative py-4 w-full"><div class="absolute left-[38px] top-8 bottom-8 w-2.5 bg-metroblue-500 rounded-full"></div>`;
   stops.forEach((s, i) => {
     const isClosed = closedStations.includes(s);
+    const meta = window.STOP_META[s] || {};
+    const sType = meta.stop_type || 'regular';
+    
+    let icon = 'trip_origin';
+    if (sType === 'terminal') icon = 'directions_bus';
+    else if (sType === 'hospital') icon = 'local_hospital';
+    else if (sType === 'university') icon = 'school';
+    else if (sType === 'transfer') icon = 'transfer_within_a_station';
+    
     html += `<div class="relative z-10 flex items-center gap-6 py-2 transition-transform hover:scale-[1.01]">
-      <div class="w-20 flex justify-center"><div class="w-5 h-5 bg-white border-4 border-metroblue-500 rounded-full ml-[33px] shadow-sm"></div></div>
-      <div class="flex-1 bg-white dark:bg-gray-800 p-4 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm font-extrabold uppercase text-sm dark:text-white ${isClosed?'line-through opacity-50 bg-red-50':''}">${s}</div>
+      <div class="w-20 flex justify-center"><div class="w-8 h-8 bg-white border-2 border-metroblue-500 rounded-full ml-[33px] shadow-sm flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-metroblue-500">${icon}</span></div></div>
+      <div class="flex-1 bg-white dark:bg-gray-800 p-4 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex flex-col justify-center ${isClosed?'line-through opacity-50 bg-red-50':''}">
+        <div class="font-extrabold uppercase text-sm dark:text-white">${s}</div>
+        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">${sType}</div>
+      </div>
     </div>`;
   });
   resCont.innerHTML = html + "</div>";
@@ -2427,77 +2134,46 @@ function timeBucketKey(hour) {
     return 'evening';
 }
 
-function crowdLabel(passengers) {
-    if (passengers >= 60) return { label: 'Very Crowded', color: 'text-metrored-500' };
-    if (passengers >= 40) return { label: 'Crowded',      color: 'text-orange-500'   };
-    if (passengers >= 20) return { label: 'Moderate',     color: 'text-amber-500'    };
-    return                       { label: 'Quiet',         color: 'text-green-500'    };
-}
-
 function getSystemConditions() {
-    const sim  = new Date(window.getSimulatedTime());
-    const hour = sim.getHours();
-    const day  = sim.getDay();
-
+    const sim  = new Date(window.getSimulatedTime()); const hour = sim.getHours(); const day  = sim.getDay();
     const seed = (sim.getFullYear() * 1000 + sim.getMonth() * 31 + sim.getDate()) % 997;
 
     const WEATHERS = ['clear', 'cloudy', 'rain', 'snow', 'fog', 'wind'];
     const TRAFFICS = ['low', 'moderate', 'high', 'congested'];
 
-    const wIdx = seed % 10 < 5 ? 0 
-               : seed % 10 < 7 ? 1 
-               : seed % 10 < 8 ? 2 
-               : seed % 10 < 9 ? 5 
-               : seed % 2 === 0 ? 3 : 4; 
+    const wIdx = seed % 10 < 5 ? 0 : seed % 10 < 7 ? 1 : seed % 10 < 8 ? 2 : seed % 10 < 9 ? 5 : seed % 2 === 0 ? 3 : 4; 
     const weather = WEATHERS[wIdx];
 
     let tIdx;
-    const isWeekend = (day === 0 || day === 6);
-    if (isWeekend) {
-        tIdx = (hour >= 10 && hour < 18) ? 1 : 0; 
-    } else {
-        if      (hour >= 7  && hour < 9)  tIdx = seed % 2 === 0 ? 2 : 3; 
+    if (day === 0 || day === 6) { tIdx = (hour >= 10 && hour < 18) ? 1 : 0; } 
+    else {
+        if (hour >= 7  && hour < 9) tIdx = seed % 2 === 0 ? 2 : 3; 
         else if (hour >= 17 && hour < 20) tIdx = seed % 2 === 0 ? 2 : 3; 
         else if (hour >= 9  && hour < 17) tIdx = 1; 
-        else                              tIdx = 0; 
+        else tIdx = 0; 
     }
-    const traffic = TRAFFICS[tIdx];
-
     const finalWeather = window.adminWeatherOverride || weather;
-    return { weather: finalWeather, traffic };
+    return { weather: finalWeather, traffic: TRAFFICS[tIdx] };
 }
 
 function updateMapConditionsUI() {
     const cond = getSystemConditions();
-
     const WEATHER_META = {
-        clear:  { icon: 'sunny',          text: 'Clear',   cls: 'text-amber-500'  },
-        cloudy: { icon: 'cloud',           text: 'Cloudy',  cls: 'text-gray-500'   },
-        rain:   { icon: 'rainy',           text: 'Rain',    cls: 'text-blue-500'   },
-        snow:   { icon: 'ac_unit',         text: 'Snow',    cls: 'text-sky-400'    },
-        fog:    { icon: 'foggy',           text: 'Fog',     cls: 'text-gray-400'   },
-        wind:   { icon: 'air',             text: 'Windy',   cls: 'text-teal-500'   },
+        clear:  { icon: 'sunny',          text: 'Clear',   cls: 'text-amber-500'  }, cloudy: { icon: 'cloud',           text: 'Cloudy',  cls: 'text-gray-500'   },
+        rain:   { icon: 'rainy',           text: 'Rain',    cls: 'text-blue-500'   }, snow:   { icon: 'ac_unit',         text: 'Snow',    cls: 'text-sky-400'    },
+        fog:    { icon: 'foggy',           text: 'Fog',     cls: 'text-gray-400'   }, wind:   { icon: 'air',             text: 'Windy',   cls: 'text-teal-500'   },
     };
     const TRAFFIC_META = {
-        low:       { icon: 'traffic', text: 'Low',       cls: 'text-green-500'  },
-        moderate:  { icon: 'traffic', text: 'Moderate',  cls: 'text-amber-500'  },
-        high:      { icon: 'traffic', text: 'High',      cls: 'text-orange-500' },
-        congested: { icon: 'traffic', text: 'Congested', cls: 'text-metrored-500' },
+        low:       { icon: 'traffic', text: 'Low',       cls: 'text-green-500'  }, moderate:  { icon: 'traffic', text: 'Moderate',  cls: 'text-amber-500'  },
+        high:      { icon: 'traffic', text: 'High',      cls: 'text-orange-500' }, congested: { icon: 'traffic', text: 'Congested', cls: 'text-metrored-500' },
     };
 
-    const wm = WEATHER_META[cond.weather] || WEATHER_META.clear;
-    const tm = TRAFFIC_META[cond.traffic] || TRAFFIC_META.low;
+    const wm = WEATHER_META[cond.weather] || WEATHER_META.clear; const tm = TRAFFIC_META[cond.traffic] || TRAFFIC_META.low;
+    const wIcon = document.getElementById('map-weather-icon'); const wText = document.getElementById('map-weather-text');
+    const tIcon = document.getElementById('map-traffic-icon'); const tText = document.getElementById('map-traffic-text');
 
-    const wIcon = document.getElementById('map-weather-icon');
-    const wText = document.getElementById('map-weather-text');
-    const tIcon = document.getElementById('map-traffic-icon');
-    const tText = document.getElementById('map-traffic-text');
-
-    if (wIcon) { wIcon.textContent = wm.icon; wIcon.className = `material-symbols-outlined text-[24px] ${wm.cls}`; }
-    if (wText) { wText.textContent = wm.text; }
-    if (tIcon) { tIcon.textContent = tm.icon; tIcon.className = `material-symbols-outlined text-[24px] ${tm.cls}`; }
-    if (tText) { tText.textContent = tm.text; }
-
+    if (wIcon) { wIcon.textContent = wm.icon; wIcon.className = `material-symbols-outlined text-[24px] ${wm.cls}`; } if (wText) { wText.textContent = wm.text; }
+    if (tIcon) { tIcon.textContent = tm.icon; tIcon.className = `material-symbols-outlined text-[24px] ${tm.cls}`; } if (tText) { tText.textContent = tm.text; }
     applyWeatherEffects(cond.weather);
 }
 
@@ -2505,13 +2181,11 @@ function generateAlgorithmicMock(endpoint, body) {
     const { line_id, hour_of_day, weather_condition, traffic_level } = body;
 
     if (endpoint.includes('predict-crowd')) {
-        let base = 15;
-        if ((hour_of_day >= 7 && hour_of_day <= 9) || (hour_of_day >= 16 && hour_of_day <= 18)) base += 35;
-        if (weather_condition === 'rain')  base = Math.round(base * 1.2);
-        if (weather_condition === 'snow')  base = Math.round(base * 1.4);
+        let base = window.CSV_HOUR_CROWD[hour_of_day] || 15;
+        let wMult = window.CSV_WEATHER_CROWD[weather_condition] || 1.0;
         return {
             line_id,
-            predicted_passengers: Math.max(0, base + Math.floor(Math.random() * 10 - 3)),
+            predicted_passengers: Math.max(0, Math.round(base * wMult) + Math.floor(Math.random() * 10 - 3)),
             source: 'Algorithmic fallback (CSV unavailable)',
         };
     }
@@ -2523,19 +2197,13 @@ function generateAlgorithmicMock(endpoint, body) {
         if (traffic_level  === 'congested') delay += 9;
         if (weather_condition === 'rain')   delay += 2;
         if (weather_condition === 'snow')   delay += 4;
-        delay = Math.max(0, delay + (Math.random() * 2 - 1));
-        const worst = delay + 2 + Math.random() * 3;
+        delay = Math.max(0, delay + (Math.random() * 2 - 1)); const worst = delay + 2 + Math.random() * 3;
         return {
-            line_id,
-            predicted_delay_min:  Math.round(delay * 10) / 10,
-            is_delayed:           delay > 2.0,
-            confidence_window:    `${Math.max(0, Math.round(delay))} – ${Math.round(worst)} mins`,
-            ai_reasoning:         'Algorithmic fallback (CSV unavailable)',
-            status:               'Normal',
-            weather_source:       'Heuristic',
+            line_id, predicted_delay_min: Math.round(delay * 10) / 10, is_delayed: delay > 2.0,
+            confidence_window: `${Math.max(0, Math.round(delay))} – ${Math.round(worst)} mins`,
+            ai_reasoning: 'Algorithmic fallback (CSV unavailable)', status: 'Normal', weather_source: 'Heuristic',
         };
     }
-
     return {};
 }
 
@@ -2547,12 +2215,10 @@ function setAdminWeather(weather) {
     document.querySelectorAll('.admin-weather-btn').forEach(btn => {
         const active = btn.dataset.weather === weather;
         btn.classList.remove('bg-metroblue-600','text-white','bg-gray-100','dark:bg-gray-700','text-gray-700','dark:text-gray-300');
-        if (active) { btn.classList.add('bg-metroblue-600','text-white'); }
-        else        { btn.classList.add('bg-gray-100','dark:bg-gray-700','text-gray-700','dark:text-gray-300'); }
+        if (active) btn.classList.add('bg-metroblue-600','text-white'); else btn.classList.add('bg-gray-100','dark:bg-gray-700','text-gray-700','dark:text-gray-300');
     });
     applyWeatherEffects(weather);
-    const lbl = document.getElementById('admin-weather-active-label');
-    if (lbl) lbl.textContent = weather.toUpperCase();
+    const lbl = document.getElementById('admin-weather-active-label'); if (lbl) lbl.textContent = weather.toUpperCase();
     showToast('Weather set to ' + weather.toUpperCase(), 'info');
 }
 </script>
