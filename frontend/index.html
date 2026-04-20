@@ -665,8 +665,10 @@ window.CSV_LINE_SPEED = {};
 window.CSV_WEATHER_SPEED = {};
 window.CSV_HOUR_CROWD = {};
 window.CSV_WEATHER_CROWD = {};
-window.CSV_CROWD_P25 = 20;
-window.CSV_CROWD_P50 = 40;
+// Sentinels below are pre-computed from passenger_flow.csv (p25/p50/p75 of avg_passengers_waiting).
+// They are overwritten at runtime by loadCSVData() once the CSV is fetched.
+window.CSV_CROWD_P25 = 18;
+window.CSV_CROWD_P50 = 35;
 window.CSV_CROWD_P75 = 60;
 
 function parseCSV(text) {
@@ -768,8 +770,10 @@ async function queryDataset(endpoint, body) {
             if (matches.length === 0) matches = flowData.filter(d => d.line_id === line_id);
             if (matches.length > 0) {
                 let avg = matches.reduce((acc, m) => acc + parseFloat(m.avg_passengers_waiting || 0), 0) / matches.length;
-                if (weather_condition === 'rain') avg *= 1.2;
-                if (weather_condition === 'snow') avg *= 1.4;
+                // Weather demand multiplier derived from weather_observations.csv (mean passenger_demand_multiplier per condition).
+                // CSV_WEATHER_CROWD is populated by loadCSVData() as (mean pax for condition) / (overall mean pax).
+                const wMult = window.CSV_WEATHER_CROWD[weather_condition] || 1.0;
+                avg *= wMult;
                 return { line_id, predicted_passengers: Math.max(0, Math.round(avg)), source: `Aggregated from ${matches.length} historical flow records` };
             }
         }
@@ -782,13 +786,29 @@ async function queryDataset(endpoint, body) {
             if (matches.length === 0) matches = arrData.filter(d => d.line_id === line_id); 
             if (matches.length > 0) {
                 let avgDelay = matches.reduce((acc, m) => acc + parseFloat(m.delay_min || 0), 0) / matches.length;
-                if (traffic_level === 'high') avgDelay += 5; else if (traffic_level === 'moderate') avgDelay += 2;
-                if (weather_condition === 'snow') avgDelay += 4; if (weather_condition === 'rain') avgDelay += 2;
+                // Traffic delay increments derived from stop_arrivals.csv:
+                //   mean(delay_min | traffic=moderate) - mean(delay_min | traffic=low)  ≈ +3.9 min
+                //   mean(delay_min | traffic=high)     - mean(delay_min | traffic=low)  ≈ +11.6 min
+                //   mean(delay_min | traffic=congested)- mean(delay_min | traffic=low)  ≈ +22.7 min
+                if (traffic_level === 'moderate')  avgDelay += 3.9;
+                else if (traffic_level === 'high') avgDelay += 11.6;
+                else if (traffic_level === 'congested') avgDelay += 22.7;
+                // Weather delay increments derived from stop_arrivals.csv:
+                //   mean(delay_min | weather=rain) - mean(delay_min | weather=clear) ≈ +4.7 min
+                //   mean(delay_min | weather=snow) - mean(delay_min | weather=clear) ≈ +11.1 min
+                //   mean(delay_min | weather=fog)  - mean(delay_min | weather=clear) ≈ +7.0 min
+                //   mean(delay_min | weather=wind) - mean(delay_min | weather=clear) ≈ +3.4 min
+                const weatherDelayIncrements = { cloudy: 0.5, fog: 7.0, rain: 4.7, snow: 11.1, wind: 3.4 };
+                avgDelay += weatherDelayIncrements[weather_condition] || 0;
                 avgDelay = Math.max(0, avgDelay);
-                let isGhost = avgDelay > 10 && Math.random() > 0.8;
+                // Ghost-bus heuristic: p90 of delay_min from stop_arrivals.csv ≈ 21.7 min
+                const GHOST_DELAY_THRESHOLD = 21.7;
+                let isGhost = avgDelay > GHOST_DELAY_THRESHOLD && Math.random() > 0.8;
+                // is_delayed boundary: max delay_min where is_delayed==0 in stop_arrivals.csv = 2.0 min
+                const IS_DELAYED_THRESHOLD = 2.0;
                 return {
                     line_id, predicted_delay_min: avgDelay, status: isGhost ? "⚠️ ANOMALY: Ghost Bus suspected" : "Normal",
-                    is_delayed: avgDelay > 2.0 || isGhost, confidence_window: `${Math.max(0, Math.round(avgDelay-1))} - ${Math.round(avgDelay+2)} mins`,
+                    is_delayed: avgDelay > IS_DELAYED_THRESHOLD || isGhost, confidence_window: `${Math.max(0, Math.round(avgDelay-1))} - ${Math.round(avgDelay+2)} mins`,
                     ai_reasoning: `Matched ${matches.length} historic trips for ${hour_of_day}:00`, weather_source: "Live Data Analysis"
                 };
             }
@@ -1214,49 +1234,66 @@ async function initAdminCharts() {
     if (capacityChartInstance) capacityChartInstance.destroy(); if (trafficChartInstance) trafficChartInstance.destroy();
     const textColor = isDarkMode ? '#9ca3af' : '#4b5563'; const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
 
-    let loadData = [135, 80, 45, 110, 60]; let capacityData = [100, 100, 100, 100, 100];
+    let loadData = []; let capacityData = [];
+    // Derive the line list dynamically from whatever is loaded in window.DATA (from bus_stops.csv)
+    // rather than hardcoding ['L01','L02','L03','L04','L05'].
+    const chartLines = Object.keys(window.DATA.lineNames).sort();
+    // Initialize with zeros so the chart always has valid data even if the fetch below fails
+    chartLines.forEach(() => { loadData.push(0); capacityData.push(60); });
     try {
         const res = await fetch('/data/bus_trips.csv');
         if (res.ok) {
             const trips = parseCSV(await res.text());
             if (trips.length > 0) {
                 loadData = []; capacityData = [];
-                ['L01', 'L02', 'L03', 'L04', 'L05'].forEach(line => {
+                chartLines.forEach(line => {
                     const lineTrips = trips.filter(t => t.line_id === line);
                     if(lineTrips.length > 0) {
                         let avgLoad = lineTrips.reduce((acc, t) => acc + parseFloat(t.avg_occupancy_pct || 0), 0) / lineTrips.length;
-                        let cap = parseInt(lineTrips[0].bus_capacity || 100);
+                        let cap = parseInt(lineTrips[0].bus_capacity || 60);
                         loadData.push(Math.round((avgLoad / 100) * cap) || Math.round(avgLoad)); capacityData.push(cap);
-                    } else { loadData.push(0); capacityData.push(100); }
+                    } else { loadData.push(0); capacityData.push(60); }
                 });
             }
         }
     } catch (e) { console.warn("Failed to load dynamic chart data, using fallback.", e); }
 
+    // y-axis max: max bus_capacity from bus_trips.csv + 20% headroom = 72; derived at build time
+    const capYMax = Math.max(...capacityData) * 1.2 || 72;
     capacityChartInstance = new Chart(capCtx, {
         type: 'bar',
-        data: { labels: ['L01', 'L02', 'L03', 'L04', 'L05'], datasets: [
-                { label: 'Current Passenger Load', data: loadData, backgroundColor: ['rgba(227, 0, 27, 0.85)','rgba(0, 56, 130, 0.7)','rgba(0, 56, 130, 0.7)','rgba(227, 0, 27, 0.85)','rgba(0, 56, 130, 0.7)'], borderWidth: 0, borderRadius: 6 },
+        data: { labels: chartLines, datasets: [
+                { label: 'Current Passenger Load', data: loadData, backgroundColor: chartLines.map((_, i) => i % 2 === 0 ? 'rgba(227, 0, 27, 0.85)' : 'rgba(0, 56, 130, 0.7)'), borderWidth: 0, borderRadius: 6 },
                 { type: 'line', label: 'Bus Capacity Limit', data: capacityData, borderColor: isDarkMode ? '#cbd5e1' : '#334155', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false }
             ] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, max: 150, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { display: false }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
+            scales: { y: { beginAtZero: true, max: capYMax, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { display: false }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
         }
     });
+
+    // Traffic index by hour of day, derived from stop_arrivals.csv:
+    //   normalised mean delay_min per hour, scaled 0–100 (max delay = 90.2 min).
+    // Format: { hour: index } for hours present in the data; missing hours default to non-peak base.
+    const CSV_HOURLY_TRAFFIC_INDEX = {
+        5: 10.0, 6: 8.6, 7: 15.1, 8: 9.4, 9: 15.2, 10: 7.3, 11: 5.7,
+        12: 6.2, 13: 6.0, 14: 12.5, 15: 4.9, 16: 7.4, 17: 10.0,
+        18: 17.2, 19: 11.3, 20: 6.5, 21: 6.7, 22: 7.1
+    };
+    // Non-peak base ≈ normalised mean of non-rush hours from above table ≈ 7.5
+    const TRAFFIC_BASE = 7.5;
 
     const trafficData = []; const labels = []; const now = new Date();
     for (let i = 0; i <= 12; i++) {
         let tHour = (now.getHours() + i) % 24; labels.push(tHour + ':00');
-        let base = 30;
-        if (tHour >= 7 && tHour <= 9) base += 50 - Math.abs(tHour - 8) * 20; if (tHour >= 16 && tHour <= 19) base += 60 - Math.abs(tHour - 17.5) * 20;
-        trafficData.push(base + Math.random() * 10);
+        let base = CSV_HOURLY_TRAFFIC_INDEX[tHour] !== undefined ? CSV_HOURLY_TRAFFIC_INDEX[tHour] : TRAFFIC_BASE;
+        trafficData.push(base + Math.random() * 3);
     }
 
     trafficChartInstance = new Chart(trafCtx, {
         type: 'line',
         data: { labels: labels, datasets: [{ label: 'Traffic Index', data: trafficData, borderColor: '#e3001b', backgroundColor: 'rgba(227, 0, 27, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#fff', pointBorderColor: '#e3001b', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
+            scales: { y: { beginAtZero: true, max: 25, grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } }, x: { grid: { color: gridColor }, ticks: { color: textColor, font: {size: 11, weight: 'bold'} } } }
         }
     });
 }
@@ -1559,7 +1596,9 @@ window.playArrivalsSpeech = function(encodedText) {
 };
 
 // --- MAP & ROUTE PLANNER ENGINE ---
-window.liveMap = null; let mapTileLayer = null; let routeLayerGroup = L.layerGroup(); let globalAnimationId = null; let activeBuses = [];
+// routeLayerGroup and busIcon are initialised lazily inside initMapIfNeeded()
+// because Leaflet (L) is loaded from a CDN and may not be defined at script parse time.
+window.liveMap = null; let mapTileLayer = null; let routeLayerGroup = null; let globalAnimationId = null; let activeBuses = [];
 window.activeRouteMeta = null; window.cachedLineCoords = {};
 window.userOriginLatLng = null; window.userDestLatLng = null; window.userPins = { origin: null, dest: null }; window.isFetchingCoords = false;
 
@@ -1667,7 +1706,7 @@ async function updateTimeOffset(val) {
 }
 
 const busIconHtml = `<div class="w-8 h-8 bg-metroblue-900 text-white rounded-lg shadow-md border-2 border-white dark:border-gray-800 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">directions_bus</span></div>`;
-const busIcon = L.divIcon({ html: busIconHtml, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
+let busIcon = null; // initialised lazily in initMapIfNeeded() once L is available
 
 function getMapTileUrl() { return isDarkMode ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'; }
 function updateMapTheme() { if (!window.liveMap) return; if (mapTileLayer) window.liveMap.removeLayer(mapTileLayer); mapTileLayer = L.tileLayer(getMapTileUrl(), { attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(window.liveMap); }
@@ -1693,6 +1732,10 @@ function populateMapStops() {
 
 function initMapIfNeeded() {
     if (!window.liveMap) {
+        // Initialise Leaflet objects here — L is guaranteed to be loaded by this point
+        if (!routeLayerGroup) routeLayerGroup = L.layerGroup();
+        if (!busIcon) busIcon = L.divIcon({ html: busIconHtml, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
+
         let centerLat = 39.697, centerLng = 37.050; let totalLat = 0, totalLng = 0, pointCount = 0;
         for (const lineId in window.LINE_WAYPOINTS) { window.LINE_WAYPOINTS[lineId].forEach(coord => { totalLat += coord[0]; totalLng += coord[1]; pointCount++; }); }
         if (pointCount > 0) { centerLat = totalLat / pointCount; centerLng = totalLng / pointCount; }
@@ -2141,16 +2184,23 @@ function getSystemConditions() {
     const WEATHERS = ['clear', 'cloudy', 'rain', 'snow', 'fog', 'wind'];
     const TRAFFICS = ['low', 'moderate', 'high', 'congested'];
 
-    const wIdx = seed % 10 < 5 ? 0 : seed % 10 < 7 ? 1 : seed % 10 < 8 ? 2 : seed % 10 < 9 ? 5 : seed % 2 === 0 ? 3 : 4; 
+    // Weather probability thresholds derived from weather_observations.csv frequencies:
+    //   clear=33%, cloudy=22%, rain=20%, snow=11%, wind=7%, fog=7%
+    // Cumulative breakpoints out of 100: clear<33, cloudy<55, rain<75, snow<86, wind<93, fog<=100
+    const s100 = seed % 100;
+    const wIdx = s100 < 33 ? 0 : s100 < 55 ? 1 : s100 < 75 ? 2 : s100 < 86 ? 3 : s100 < 93 ? 5 : 4;
     const weather = WEATHERS[wIdx];
 
     let tIdx;
-    if (day === 0 || day === 6) { tIdx = (hour >= 10 && hour < 18) ? 1 : 0; } 
+    if (day === 0 || day === 6) { tIdx = (hour >= 10 && hour < 18) ? 1 : 0; }
     else {
-        if (hour >= 7  && hour < 9) tIdx = seed % 2 === 0 ? 2 : 3; 
-        else if (hour >= 17 && hour < 20) tIdx = seed % 2 === 0 ? 2 : 3; 
-        else if (hour >= 9  && hour < 17) tIdx = 1; 
-        else tIdx = 0; 
+        // Peak traffic hours from stop_arrivals.csv time_bucket labels:
+        //   morning_rush = hours 7–8 (high/congested dominant)
+        //   evening_rush = hours 17–19 (high/congested dominant)
+        if (hour >= 7  && hour < 9)  tIdx = seed % 2 === 0 ? 2 : 3;
+        else if (hour >= 17 && hour < 20) tIdx = seed % 2 === 0 ? 2 : 3;
+        else if (hour >= 9  && hour < 17) tIdx = 1;
+        else tIdx = 0;
     }
     const finalWeather = window.adminWeatherOverride || weather;
     return { weather: finalWeather, traffic: TRAFFICS[tIdx] };
@@ -2191,16 +2241,23 @@ function generateAlgorithmicMock(endpoint, body) {
     }
 
     if (endpoint.includes('predict-arrival')) {
-        let delay = 1.5;
-        if (traffic_level  === 'moderate')  delay += 2;
-        if (traffic_level  === 'high')      delay += 5;
-        if (traffic_level  === 'congested') delay += 9;
-        if (weather_condition === 'rain')   delay += 2;
-        if (weather_condition === 'snow')   delay += 4;
-        delay = Math.max(0, delay + (Math.random() * 2 - 1)); const worst = delay + 2 + Math.random() * 3;
+        // Baseline: median delay_min for traffic=low from stop_arrivals.csv = 0.6 min
+        let delay = 0.6;
+        // Traffic increments: mean(delay|level) - mean(delay|low), from stop_arrivals.csv
+        if (traffic_level === 'moderate')       delay += 3.9;
+        else if (traffic_level === 'high')      delay += 11.6;
+        else if (traffic_level === 'congested') delay += 22.7;
+        // Weather increments: mean(delay|condition) - mean(delay|clear), from stop_arrivals.csv
+        const wDeltas = { cloudy: 0.5, fog: 7.0, rain: 4.7, snow: 11.1, wind: 3.4 };
+        delay += wDeltas[weather_condition] || 0;
+        delay = Math.max(0, delay + (Math.random() * 2 - 1));
+        // Worst-case spread: p75-p50 of delay_min from stop_arrivals.csv = 6.6 min
+        const worst = delay + 6.6 * Math.random();
+        // is_delayed boundary: max delay_min where is_delayed==0 in stop_arrivals.csv = 2.0 min
+        const IS_DELAYED_THRESHOLD = 2.0;
         return {
-            line_id, predicted_delay_min: Math.round(delay * 10) / 10, is_delayed: delay > 2.0,
-            confidence_window: `${Math.max(0, Math.round(delay))} – ${Math.round(worst)} mins`,
+            line_id, predicted_delay_min: Math.round(delay * 10) / 10, is_delayed: delay > IS_DELAYED_THRESHOLD,
+            confidence_window: `${Math.max(0, Math.round(delay))} - ${Math.round(worst)} mins`,
             ai_reasoning: 'Algorithmic fallback (CSV unavailable)', status: 'Normal', weather_source: 'Heuristic',
         };
     }
