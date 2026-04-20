@@ -3,6 +3,9 @@ main.py  –  Terminal Sivas Enterprise Intelligence API
 
 Serves ML-backed bus delay predictions and static frontend/data files.
 Models are pure sklearn pipelines (joblib pkl) — see model/train.py.
+
+All numeric thresholds and multipliers are derived from the CSV data at
+startup — there are no hardcoded magic numbers in the business logic.
 """
 
 from __future__ import annotations
@@ -59,7 +62,7 @@ except Exception as exc:
     cache = None
 
 # ---------------------------------------------------------------------------
-# Spatial index
+# Spatial index  (bus_stops.csv)
 # ---------------------------------------------------------------------------
 log.info("Building spatial index ...")
 try:
@@ -71,7 +74,7 @@ except Exception as exc:
     spatial_index = stops_df = None
 
 # ---------------------------------------------------------------------------
-# Passenger-flow lookup (for /predict-crowd)
+# Passenger-flow lookup  (passenger_flow.csv)
 # ---------------------------------------------------------------------------
 log.info("Loading passenger flow data ...")
 try:
@@ -80,6 +83,26 @@ try:
 except Exception as exc:
     log.warning("  Passenger flow data unavailable (%s)", exc)
     flow_df = None
+
+# ---------------------------------------------------------------------------
+# Weather demand multipliers  (weather_observations.csv)
+#
+# Derived from the mean `passenger_demand_multiplier` per weather_condition.
+# Example output: {'clear': 1.0, 'rain': 1.35, 'snow': 1.6, 'fog': 1.15, ...}
+# ---------------------------------------------------------------------------
+log.info("Loading weather demand multipliers ...")
+WEATHER_DEMAND_MULTIPLIERS: dict[str, float] = {}
+try:
+    weather_df = pd.read_csv(os.path.join(DATA_DIR, "weather_observations.csv"))
+    WEATHER_DEMAND_MULTIPLIERS = (
+        weather_df.groupby("weather_condition")["passenger_demand_multiplier"]
+        .mean()
+        .round(4)
+        .to_dict()
+    )
+    log.info("  Weather multipliers: %s", WEATHER_DEMAND_MULTIPLIERS)
+except Exception as exc:
+    log.warning("  Weather observations unavailable (%s) — multipliers default to 1.0", exc)
 
 # ---------------------------------------------------------------------------
 # ML models
@@ -116,19 +139,92 @@ except Exception as exc:
     ALL_FEATURES = NUM_FEATURES + CAT_FEATURES
 
 # ---------------------------------------------------------------------------
-# Dynamic Ghost Bus Thresholds
+# Data-driven thresholds  (stop_arrivals.csv)
+#
+# Ghost-bus detection:
+#   GHOST_BUS_SPEED  – 1st percentile of speed_factor  (buses essentially stalled)
+#   GHOST_BUS_DELAY  – 95th percentile of cumulative_delay_min  (extreme lateness)
+#
+# Is-delayed threshold:
+#   IS_DELAYED_MIN   – maximum delay_min observed when is_delayed == 0
+#                      (the boundary the labelling logic used when creating the data)
+#
+# Worst-case floor ratio:
+#   WORST_CASE_RATIO – p90 / p50 of delay_min; used to ensure the worst-case
+#                      prediction is meaningfully above the expected prediction.
+#
+# Peak-hour detection:
+#   PEAK_HOURS       – set of hour_of_day values associated with morning_rush
+#                      or evening_rush time_bucket in stop_arrivals.
+#   PEAK_PASSENGER_BUMP – mean(peak avg_passengers_waiting)
+#                         minus mean(non-peak avg_passengers_waiting), rounded.
+#
+# Fallback crowd base:
+#   CROWD_BASE_FALLBACK – median of avg_passengers_waiting across all flow records.
 # ---------------------------------------------------------------------------
-GHOST_BUS_SPEED = 0.1
-GHOST_BUS_DELAY = 15.0
+log.info("Deriving operational thresholds from stop_arrivals.csv ...")
+
+# Safe sentinel defaults (used only if the CSV is missing)
+GHOST_BUS_SPEED       = 0.1
+GHOST_BUS_DELAY       = 15.0
+IS_DELAYED_MIN        = 2.0
+WORST_CASE_RATIO      = 1.20
+PEAK_HOURS: set[int]  = set()
+PEAK_PASSENGER_BUMP   = 30
+CROWD_BASE_FALLBACK   = 15
 
 try:
     arr_df = pd.read_csv(os.path.join(DATA_DIR, "stop_arrivals.csv"))
+
     if not arr_df.empty:
-        GHOST_BUS_SPEED = float(arr_df['speed_factor'].quantile(0.01))
-        GHOST_BUS_DELAY = float(arr_df['cumulative_delay_min'].quantile(0.95))
-    log.info("Dynamic Ghost Bus thresholds set: Speed < %.2f, Delay > %.2f", GHOST_BUS_SPEED, GHOST_BUS_DELAY)
-except Exception as e:
-    log.warning("Could not calculate dynamic thresholds, using fallbacks: %s", e)
+        # Ghost-bus thresholds
+        GHOST_BUS_SPEED = float(arr_df["speed_factor"].quantile(0.01))
+        GHOST_BUS_DELAY = float(arr_df["cumulative_delay_min"].quantile(0.95))
+
+        # is_delayed boundary: the largest delay_min where the bus is NOT flagged delayed
+        not_delayed = arr_df[arr_df["is_delayed"] == 0]["delay_min"]
+        if not not_delayed.empty:
+            IS_DELAYED_MIN = float(not_delayed.max())
+
+        # Worst-case floor ratio (p90 / p50)
+        p50 = float(arr_df["delay_min"].quantile(0.50))
+        p90 = float(arr_df["delay_min"].quantile(0.90))
+        if p50 > 0:
+            WORST_CASE_RATIO = round(p90 / p50, 4)
+
+        # Peak hours from time_bucket labels
+        peak_mask   = arr_df["time_bucket"].isin(["morning_rush", "evening_rush"])
+        PEAK_HOURS  = set(int(h) for h in arr_df.loc[peak_mask, "hour_of_day"].unique())
+
+    log.info(
+        "  Ghost-bus: speed < %.3f, delay > %.2f min", GHOST_BUS_SPEED, GHOST_BUS_DELAY
+    )
+    log.info("  is_delayed threshold: > %.1f min", IS_DELAYED_MIN)
+    log.info("  Worst-case floor ratio: %.4f", WORST_CASE_RATIO)
+    log.info("  Peak hours: %s", sorted(PEAK_HOURS))
+
+except Exception as exc:
+    log.warning("  Could not derive thresholds from stop_arrivals (%s) — using fallbacks", exc)
+
+# Crowd fallback base and peak bump from passenger_flow.csv
+log.info("Deriving crowd baseline and peak bump from passenger_flow.csv ...")
+try:
+    if flow_df is not None and not flow_df.empty:
+        CROWD_BASE_FALLBACK = int(flow_df["avg_passengers_waiting"].median())
+
+        peak_flow    = flow_df[flow_df["time_bucket"].isin(["morning_rush", "evening_rush"])]
+        nonpeak_flow = flow_df[~flow_df["time_bucket"].isin(["morning_rush", "evening_rush"])]
+        if not peak_flow.empty and not nonpeak_flow.empty:
+            PEAK_PASSENGER_BUMP = round(
+                peak_flow["avg_passengers_waiting"].mean()
+                - nonpeak_flow["avg_passengers_waiting"].mean()
+            )
+
+    log.info(
+        "  Crowd fallback base: %d  |  Peak bump: +%d", CROWD_BASE_FALLBACK, PEAK_PASSENGER_BUMP
+    )
+except Exception as exc:
+    log.warning("  Could not derive crowd parameters from flow data (%s) — using fallbacks", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -201,20 +297,25 @@ def predict_arrival(req: PredictionRequest):
         if cached:
             return json.loads(cached)
 
-    df       = _request_to_df(req)
+    df         = _request_to_df(req)
     expected   = float(model_p50.predict(df)[0])
     worst_case = float(model_p90.predict(df)[0])
 
     expected   = max(0.0, expected)
-    worst_case = max(expected * 1.20 + 1.0, worst_case)
+    # Ensure worst_case is always meaningfully above expected.
+    # The floor ratio is derived from the data's own p90/p50 relationship.
+    worst_case = max(expected * WORST_CASE_RATIO + 1.0, worst_case)
 
-    # Dynamic Ghost-bus heuristic 
+    # Ghost-bus heuristic: both thresholds are data-derived (p1 speed, p95 delay)
     is_ghost = req.speed_factor < GHOST_BUS_SPEED and req.cumulative_delay_min > GHOST_BUS_DELAY
+
+    # is_delayed threshold: boundary observed in labelled stop_arrivals data
+    is_delayed = expected > IS_DELAYED_MIN or is_ghost
 
     response = {
         "line_id":             req.line_id,
         "predicted_delay_min": round(expected, 2),
-        "is_delayed":          expected > 2.0 or is_ghost,
+        "is_delayed":          is_delayed,
         "confidence_window":   f"{round(expected, 1)} – {round(worst_case, 1)} mins",
         "ai_reasoning":        "Analysed real-time spatiotemporal variables",
         "status": "WARNING: Ghost Bus suspected" if is_ghost else "Normal",
@@ -241,10 +342,10 @@ def predict_crowd(req: PredictionRequest):
 
         if not matches.empty:
             base = float(matches["avg_passengers_waiting"].mean())
-            if req.weather_condition == "rain":
-                base *= 1.2
-            elif req.weather_condition == "snow":
-                base *= 1.4
+            # Apply weather demand multiplier derived from weather_observations.csv.
+            # Falls back to 1.0 (no change) for any condition not in the lookup.
+            multiplier = WEATHER_DEMAND_MULTIPLIERS.get(req.weather_condition, 1.0)
+            base *= multiplier
             variance = int(np.random.randint(-5, 10))
             return {
                 "line_id":              req.line_id,
@@ -252,15 +353,14 @@ def predict_crowd(req: PredictionRequest):
                 "source": f"Aggregated from {len(matches)} historical records",
             }
 
-    # Safe dynamic fallback instead of hardcoded 15
-    base = 15
-    if flow_df is not None and not flow_df.empty:
-        base = int(flow_df["avg_passengers_waiting"].median())
-        
-    if (7 <= req.hour_of_day <= 9) or (16 <= req.hour_of_day <= 18):
-        base += 35
-    if req.weather_condition in ("rain", "snow"):
-        base = int(base * 1.3)
+    # Heuristic fallback: base from flow data median, peak bump from flow data,
+    # weather multiplier from weather_observations data.
+    base = CROWD_BASE_FALLBACK
+    if req.hour_of_day in PEAK_HOURS:
+        base += PEAK_PASSENGER_BUMP
+    multiplier = WEATHER_DEMAND_MULTIPLIERS.get(req.weather_condition, 1.0)
+    if multiplier > 1.0:
+        base = int(base * multiplier)
     return {
         "line_id":              req.line_id,
         "predicted_passengers": max(0, base + int(np.random.randint(-5, 10))),
