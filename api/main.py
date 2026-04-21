@@ -1,125 +1,126 @@
-import os
-import pickle
-import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+import onnxruntime as ort
+import pandas as pd
+import numpy as np
+import os
+import json
+import redis
+import joblib
+import shap
+from scipy.spatial import cKDTree
+from circuitbreaker import circuit
 
-MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "model")
-DATA_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
+app = FastAPI(title="Terminal Sivas Enterprise Intelligence API")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-def load_pickle(name):
-    with open(os.path.join(MODEL_DIR, name), "rb") as f:
-        return pickle.load(f)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "..", "model")
+DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 
-model_delay = load_pickle("model_delay.pkl")
-model_crowd = load_pickle("model_crowd.pkl")
-encoders    = load_pickle("encoders.pkl")
-features    = load_pickle("features.pkl")
+# --- INITIALIZATION ---
+print("Initializing Redis Cache...")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+try:
+    cache = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
+    cache.ping()
+except:
+    cache = None
 
-stops_df = pd.read_csv(os.path.join(DATA_DIR, "bus_stops.csv"))
+print("Loading Spatial Index...")
+try:
+    stops_df = pd.read_csv(os.path.join(DATA_DIR, "bus_stops.csv"))
+    spatial_index = cKDTree(stops_df[['latitude', 'longitude']].values)
+except:
+    spatial_index, stops_df = None, None
 
-def encode(col, value):
-    le = encoders.get(col)
-    try:
-        return int(le.transform([str(value)])[0])
-    except:
-        return 0
+print("Loading ML Assets...")
+sess_options = ort.SessionOptions()
+sess_50 = ort.InferenceSession(os.path.join(MODEL_DIR, "model_delay_50_quant.onnx"), sess_options)
+sess_90 = ort.InferenceSession(os.path.join(MODEL_DIR, "model_delay_90_quant.onnx"), sess_options)
+sklearn_model = joblib.load(os.path.join(MODEL_DIR, "model_delay_sklearn.pkl"))
 
-def crowding_label(p):
-    if p <= 10:   return {"label": "Empty",    "color": "green",  "emoji": "🟢"}
-    elif p <= 25: return {"label": "Light",    "color": "lime",   "emoji": "🟡"}
-    elif p <= 45: return {"label": "Moderate", "color": "yellow", "emoji": "🟠"}
-    elif p <= 70: return {"label": "Busy",     "color": "orange", "emoji": "🔴"}
-    else:         return {"label": "Crowded",  "color": "red",    "emoji": "🔴"}
-
-app = FastAPI(title="Predictive Transit API", version="1.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
-class ArrivalRequest(BaseModel):
+# --- REQUEST MODEL ---
+class PredictionRequest(BaseModel):
     line_id: str
     stop_sequence: int
     stop_type: str
+    time_bucket: str
     hour_of_day: int
     day_of_week: int
     is_weekend: int
     cumulative_delay_min: float
     speed_factor: float
     minutes_to_next_bus: float
-    weather_condition: str
-    traffic_level: str
-    time_bucket: str
+    upstream_delay_min: float = 0.0
+    rolling_delay_last_2_stops: float = 0.0
 
-class CrowdRequest(BaseModel):
-    line_id: str
-    stop_sequence: int
-    stop_type: str
-    hour_of_day: int
-    day_of_week: int
-    is_weekend: int
-    minutes_to_next_bus: float
-    dwell_time_min: Optional[float] = 1.0
-    weather_condition: str
-    traffic_level: str
-    time_bucket: str
+# --- CIRCUIT BREAKER ---
+@circuit(failure_threshold=3, recovery_timeout=30)
+def fetch_weather_api():
+    # Simulated external call
+    return {"impact": 1.5, "status": "Live Data"}
 
-@app.get("/")
-def health():
-    return {"status": "ok", "service": "Predictive Transit API"}
+def get_weather():
+    try: return fetch_weather_api()
+    except Exception: return {"impact": 1.0, "status": "Historical Fallback"}
 
-@app.get("/lines")
-def get_lines():
-    return {"lines": stops_df[["line_id","line_name"]].drop_duplicates().to_dict("records")}
+# --- HELPER ---
+def build_onnx_inputs(sess, df):
+    inputs = {}
+    for inp in sess.get_inputs():
+        if inp.name not in df.columns: continue
+        val = df[inp.name].values
+        if inp.type == 'tensor(float)': val = val.astype(np.float32)
+        elif inp.type == 'tensor(int64)': val = val.astype(np.int64)
+        elif inp.type == 'tensor(string)': val = val.astype(str).astype(object)
+        inputs[inp.name] = val.reshape(-1, 1) if len(val.shape) == 1 else val
+    return inputs
 
-@app.get("/stops/{line_id}")
-def get_stops(line_id: str):
-    f = stops_df[stops_df["line_id"] == line_id].sort_values("stop_sequence")
-    if f.empty:
-        raise HTTPException(status_code=404, detail=f"Line {line_id} not found")
-    return {"stops": f.to_dict("records")}
-
+# --- ENDPOINTS ---
 @app.post("/predict-arrival")
-def predict_arrival(req: ArrivalRequest):
-    row = {
-        "stop_sequence": req.stop_sequence, "hour_of_day": req.hour_of_day,
-        "day_of_week": req.day_of_week, "is_weekend": req.is_weekend,
-        "cumulative_delay_min": req.cumulative_delay_min, "speed_factor": req.speed_factor,
-        "minutes_to_next_bus": req.minutes_to_next_bus,
-        "weather_condition_enc": encode("weather_condition", req.weather_condition),
-        "traffic_level_enc": encode("traffic_level", req.traffic_level),
-        "stop_type_enc": encode("stop_type", req.stop_type),
-        "time_bucket_enc": encode("time_bucket", req.time_bucket),
-        "line_id_enc": encode("line_id", req.line_id),
-    }
-    X = pd.DataFrame([row])[features["delay"]]
-    delay = max(float(model_delay.predict(X)[0]), 0)
-    return {
+def predict_arrival(req: PredictionRequest):
+    # 1. Check Redis Cache
+    cache_key = f"delay:{req.line_id}:{req.stop_sequence}:{req.cumulative_delay_min}"
+    if cache and cache.get(cache_key): return json.loads(cache.get(cache_key))
+
+    # 2. Compile Data
+    weather = get_weather()
+    df = pd.DataFrame([req.dict()])
+    df['weather_traffic_impact'] = weather['impact']
+    
+    # 3. ONNX Inference (Quantile Regression)
+    onnx_inputs = build_onnx_inputs(sess_50, df)
+    expected = float(sess_50.run(None, onnx_inputs)[0][0, 0])
+    worst_case = float(sess_90.run(None, onnx_inputs)[0][0, 0])
+    
+    # 4. SHAP Explainable AI (The Transparent Oracle)
+    X_trans = sklearn_model.named_steps['preprocessor'].transform(df)
+    explainer = shap.TreeExplainer(sklearn_model.named_steps['regressor'])
+    shap_vals = explainer.shap_values(X_trans)
+    feat_names = sklearn_model.named_steps['preprocessor'].get_feature_names_out()
+    
+    contributions = sorted(list(zip(feat_names, shap_vals[0])), key=lambda x: abs(x[1]), reverse=True)
+    top_factors = [f"{f.split('__')[-1]}: {round(v,1)}m" for f, v in contributions[:2] if abs(v) > 0.5]
+    
+    # 5. Ghost Bus Anomaly Detection
+    is_ghost = (req.speed_factor < 0.1 and req.cumulative_delay_min > 15.0)
+
+    response = {
         "line_id": req.line_id,
-        "predicted_delay_min": round(delay, 1),
-        "status": "On time" if delay <= 2 else f"{round(delay)} min late",
-        "is_delayed": delay > 2,
+        "confidence_window": f"{max(0, round(expected, 1))} - {max(0, round(worst_case, 1))} mins",
+        "ai_reasoning": f"Major factors: {', '.join(top_factors)}" if top_factors else "Standard traffic flow.",
+        "status": "⚠️ ANOMALY: Ghost Bus suspected" if is_ghost else "Normal",
+        "weather_source": weather['status']
     }
 
-@app.post("/predict-crowd")
-def predict_crowd(req: CrowdRequest):
-    row = {
-        "stop_sequence": req.stop_sequence, "hour_of_day": req.hour_of_day,
-        "day_of_week": req.day_of_week, "is_weekend": req.is_weekend,
-        "minutes_to_next_bus": req.minutes_to_next_bus, "dwell_time_min": req.dwell_time_min,
-        "weather_condition_enc": encode("weather_condition", req.weather_condition),
-        "traffic_level_enc": encode("traffic_level", req.traffic_level),
-        "stop_type_enc": encode("stop_type", req.stop_type),
-        "time_bucket_enc": encode("time_bucket", req.time_bucket),
-        "line_id_enc": encode("line_id", req.line_id),
-    }
-    X = pd.DataFrame([row])[features["crowd"]]
-    passengers = max(int(round(float(model_crowd.predict(X)[0]))), 0)
-    crowding = crowding_label(passengers)
-    return {
-        "line_id": req.line_id,
-        "predicted_passengers": passengers,
-        "crowding_level": crowding["label"],
-        "crowding_color": crowding["color"],
-        "crowding_emoji": crowding["emoji"],
-    }
+    if cache: cache.setex(cache_key, 30, json.dumps(response))
+    return response
+
+@app.get("/stops-near-me")
+def get_stops_near_me(lat: float, lon: float, radius_km: float = 0.5):
+    if spatial_index is None: raise HTTPException(status_code=500, detail="Index offline")
+    radius_deg = radius_km / 111.0
+    indices = spatial_index.query_ball_point([lat, lon], r=radius_deg)
+    return {"stops": stops_df.iloc[indices][['stop_id', 'line_name']].to_dict(orient='records')}

@@ -1,11 +1,16 @@
 import os
-import pickle
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.preprocessing import LabelEncoder
+import joblib
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+from skl2onnx import to_onnx
+from onnxconverter_common.float16 import convert_float_to_float16
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR  = os.path.join(BASE_DIR, "..", "data")
@@ -13,51 +18,71 @@ MODEL_DIR = BASE_DIR
 
 print("Loading data...")
 df = pd.read_csv(os.path.join(DATA_DIR, "stop_arrivals.csv"))
-print(f"  Rows: {len(df)}")
+df = df.sort_values(by=['trip_id', 'stop_sequence'])
 
-CAT_COLS = ["weather_condition", "traffic_level", "stop_type", "time_bucket", "line_id"]
-encoders = {}
-for col in CAT_COLS:
-    le = LabelEncoder()
-    df[col + "_enc"] = le.fit_transform(df[col].astype(str))
-    encoders[col] = le
+# --- 1. SPATIOTEMPORAL FEATURE ENGINEERING ---
+# The "Ripple Effect": Was the bus delayed at the stop immediately before this one?
+df['upstream_delay_min'] = df.groupby('trip_id')['cumulative_delay_min'].shift(1).fillna(0)
 
-DELAY_FEATURES = [
-    "stop_sequence", "hour_of_day", "day_of_week", "is_weekend",
+# Rolling Delay: Average delay of the last 2 stops
+df['rolling_delay_last_2_stops'] = df.groupby('trip_id')['cumulative_delay_min'].transform(
+    lambda x: x.shift(1).rolling(window=2, min_periods=1).mean().fillna(0)
+)
+
+# Weather x Traffic Interaction (Combining them to simplify the model)
+traffic_map = {'low': 1, 'moderate': 2, 'high': 3, 'congested': 4}
+df['traffic_num'] = df['traffic_level'].map(traffic_map).fillna(1)
+df['is_raining_or_snowing'] = df['weather_condition'].apply(lambda x: 1 if x in ['rain', 'snow'] else 0)
+df['weather_traffic_impact'] = df['is_raining_or_snowing'] * df['traffic_num']
+
+# --- 2. PIPELINE SETUP ---
+CAT_FEATURES = ["stop_type", "time_bucket", "line_id"]
+NUM_FEATURES = [
+    "stop_sequence", "hour_of_day", "day_of_week", "is_weekend", 
     "cumulative_delay_min", "speed_factor", "minutes_to_next_bus",
-    "weather_condition_enc", "traffic_level_enc",
-    "stop_type_enc", "time_bucket_enc", "line_id_enc",
+    "upstream_delay_min", "rolling_delay_last_2_stops", "weather_traffic_impact" 
 ]
 
-CROWD_FEATURES = [
-    "stop_sequence", "hour_of_day", "day_of_week", "is_weekend",
-    "minutes_to_next_bus", "dwell_time_min",
-    "weather_condition_enc", "traffic_level_enc",
-    "stop_type_enc", "time_bucket_enc", "line_id_enc",
-]
+preprocessor = ColumnTransformer(transformers=[
+    ('num', SimpleImputer(strategy='median'), NUM_FEATURES),
+    ('cat', Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+    ]), CAT_FEATURES)
+])
 
-print("\nTraining Model 1: Arrival Delay...")
-X1 = df[DELAY_FEATURES].fillna(0)
-y1 = df["delay_min"]
-X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, random_state=42)
-model_delay = GradientBoostingRegressor(n_estimators=200, max_depth=5, learning_rate=0.05, random_state=42)
-model_delay.fit(X1_train, y1_train)
-mae = mean_absolute_error(y1_test, model_delay.predict(X1_test))
-print(f"  MAE: {mae:.2f} minutes")
+# Model A: 50th Percentile (Expected Delay)
+pipeline_50 = Pipeline([
+    ('preprocessor', preprocessor),
+    ('regressor', HistGradientBoostingRegressor(loss='absolute_error', random_state=42))
+])
 
-print("\nTraining Model 2: Crowd Estimation...")
-X2 = df[CROWD_FEATURES].fillna(0)
-y2 = df["passengers_waiting"]
-X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size=0.2, random_state=42)
-model_crowd = RandomForestRegressor(n_estimators=200, max_depth=8, random_state=42, n_jobs=-1)
-model_crowd.fit(X2_train, y2_train)
-rmse = np.sqrt(mean_squared_error(y2_test, model_crowd.predict(X2_test)))
-print(f"  RMSE: {rmse:.2f} people")
+# Model B: 90th Percentile (Worst-Case Risk)
+pipeline_90 = Pipeline([
+    ('preprocessor', preprocessor),
+    ('regressor', HistGradientBoostingRegressor(loss='quantile', quantile=0.90, random_state=42))
+])
 
-print("\nSaving models...")
-for name, obj in [("model_delay.pkl", model_delay), ("model_crowd.pkl", model_crowd),
-                   ("encoders.pkl", encoders), ("features.pkl", {"delay": DELAY_FEATURES, "crowd": CROWD_FEATURES})]:
-    with open(os.path.join(MODEL_DIR, name), "wb") as f:
-        pickle.dump(obj, f)
+X = df[NUM_FEATURES + CAT_FEATURES]
+y = df["delay_min"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-print(f"\nDone! MAE: {mae:.2f} min | RMSE: {rmse:.2f} people")
+print("\nTraining Expected Arrival (50th Percentile)...")
+pipeline_50.fit(X_train, y_train)
+
+print("Training Worst-Case Scenario (90th Percentile)...")
+pipeline_90.fit(X_train, y_train)
+
+# --- 3. EXPORTING ---
+print("\nExporting Models...")
+# Save the Sklearn model for SHAP Explainability
+joblib.dump(pipeline_50, os.path.join(MODEL_DIR, "model_delay_sklearn.pkl"))
+
+# Convert to ONNX Float16 for raw speed
+onx_50 = convert_float_to_float16(to_onnx(pipeline_50, X_train[:1]))
+onx_90 = convert_float_to_float16(to_onnx(pipeline_90, X_train[:1]))
+
+with open(os.path.join(MODEL_DIR, "model_delay_50_quant.onnx"), "wb") as f: f.write(onx_50.SerializeToString())
+with open(os.path.join(MODEL_DIR, "model_delay_90_quant.onnx"), "wb") as f: f.write(onx_90.SerializeToString())
+
+print("MLOps Pipeline execution complete! Models saved.")
